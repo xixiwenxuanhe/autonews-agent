@@ -4,9 +4,7 @@ import schedule
 from dotenv import load_dotenv
 from datetime import datetime
 
-from agents.tech_agent import TechNewsAgent
-from agents.economy_agent import EconomyNewsAgent
-from agents.science_agent import ScienceNewsAgent
+from agents.search_agent import SearchAgent
 from agents.integration_agent import ContentIntegrationAgent
 from agents.email_agent import EmailAgent
 
@@ -49,25 +47,20 @@ def run_news_aggregation():
     
     # 初始化各个智能体
     print_debug_info("初始化智能体", is_start=True)
-    tech_agent = TechNewsAgent()
-    economy_agent = EconomyNewsAgent()
-    science_agent = ScienceNewsAgent()
+    search_agent = SearchAgent()
     integration_agent = ContentIntegrationAgent()
     email_agent = EmailAgent()
     print_debug_info("初始化智能体", is_start=False, is_result=True)
     
     # 收集各类新闻
-    print_debug_info("IT科技新闻", is_start=True)
-    tech_news = tech_agent.collect_news()
+    print_debug_info("收集所有领域新闻", is_start=True)
+    all_news = search_agent.collect_news()
+    tech_news = all_news.get("technology", [])
+    science_news = all_news.get("science", [])
+    economy_news = all_news.get("economy", [])
     print_debug_info("IT科技新闻", is_start=False, is_result=True, result=tech_news)
-    
-    print_debug_info("经济新闻", is_start=True)
-    economy_news = economy_agent.collect_news()
-    print_debug_info("经济新闻", is_start=False, is_result=True, result=economy_news)
-    
-    print_debug_info("科学新闻", is_start=True)
-    science_news = science_agent.collect_news()
     print_debug_info("科学新闻", is_start=False, is_result=True, result=science_news)
+    print_debug_info("经济新闻", is_start=False, is_result=True, result=economy_news)
     
     # 整合内容
     print_debug_info("整合新闻内容", is_start=True)
