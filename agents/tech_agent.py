@@ -1,6 +1,7 @@
 import requests
 from datetime import datetime, timedelta
 from .base_agent import BaseAgent
+import time  # 添加time模块
 
 class TechNewsAgent(BaseAgent):
     """IT科技新闻智能体"""
@@ -8,53 +9,38 @@ class TechNewsAgent(BaseAgent):
     def __init__(self):
         """初始化IT科技新闻智能体"""
         super().__init__()
-        self.categories = ["technology", "science"]
+        self.categories = ["technology"]
         self.en_keywords = [
-            # 人工智能相关
-            "AI", "artificial intelligence", "machine learning", "deep learning", "neural networks",
-            "language models", "LLM", "GPT", "natural language processing", "NLP",
-            "computer vision", "robotics", "autonomous systems", "algorithm",
+            # 人工智能
+            "artificial intelligence", "machine learning", "deep learning", "neural networks",
+            "large language models", "LLM", "GPT", "natural language processing", "NLP",
+            "computer vision", "robotics", "autonomous systems",
             
             # 基础技术
-            "tech", "technology", "software", "hardware", "cloud computing", 
-            "big data", "data science", "database", "programming", "code",
+            "software development", "programming", "cloud computing", "big data",
+            "database", "system architecture", "cybersecurity",
             
-            # 新兴技术领域
-            "digital transformation", "IoT", "Internet of Things", "blockchain", "cryptocurrency",
-            "bitcoin", "ethereum", "web3", "metaverse", "augmented reality", "AR",
+            # 新兴技术
+            "blockchain", "cryptocurrency", "metaverse", "augmented reality", "AR",
             "virtual reality", "VR", "quantum computing", "edge computing",
             
             # 移动与消费电子
-            "smartphone", "mobile technology", "wearable tech", "smartwatch", "gadget",
-            "consumer electronics", "laptop", "5G", "6G", "wireless technology",
-            
-            # 企业与产业
-            "tech industry", "startup", "innovation", "digital", "enterprise software", 
-            "SaaS", "fintech", "healthtech", "edtech", "tech company",
-            "tech investment", "venture capital", "tech regulation", "tech policy"
+            "smartphone", "mobile technology", "wearable tech", "5G", "6G"
         ]
         
         self.zh_keywords = [
-            # 人工智能相关
+            # 人工智能
             "人工智能", "机器学习", "深度学习", "神经网络", "大模型", "大语言模型",
-            "自然语言处理", "计算机视觉", "机器人", "自动驾驶", "算法", "智能助手",
+            "自然语言处理", "计算机视觉", "机器人", "自动驾驶", "智能助手",
             
             # 基础技术
-            "科技", "技术", "软件", "硬件", "云计算", "大数据", "数据科学", 
-            "数据库", "编程", "代码", "开发", "系统架构",
+            "软件开发", "编程", "云计算", "大数据", "数据库", "系统架构", "网络安全",
             
-            # 新兴技术领域
-            "数字化", "数字化转型", "物联网", "区块链", "加密货币", "比特币", 
-            "以太坊", "Web3", "元宇宙", "增强现实", "虚拟现实", "量子计算", "边缘计算",
+            # 新兴技术
+            "元宇宙", "增强现实", "虚拟现实", "量子计算", "边缘计算",
             
             # 移动与消费电子
-            "智能手机", "移动技术", "可穿戴设备", "智能手表", "电子设备", "消费电子",
-            "笔记本电脑", "5G", "6G", "无线技术", "智能家居",
-            
-            # 企业与产业
-            "科技产业", "创新", "互联网", "创业公司", "企业软件", "软件即服务", 
-            "金融科技", "健康科技", "教育科技", "科技公司", "科技投资", 
-            "风险投资", "科技监管", "科技政策", "数字经济"
+            "智能手机", "移动技术", "可穿戴设备", "5G", "6G"
         ]
     
     def collect_news(self, max_articles=5):
@@ -126,30 +112,26 @@ class TechNewsAgent(BaseAgent):
         
         # 导入随机模块
         import random
+        import time  # 添加time模块
         
         # 随机打乱关键词顺序
         shuffled_keywords = keywords.copy()
         random.shuffle(shuffled_keywords)
         
-        # 只选取前30个关键词，避免过多查询
-        selected_keywords = shuffled_keywords[:30]
-        
-        # 将关键词分批处理，每批最多10个关键词
-        batch_size = 10
-        keywords_batches = [selected_keywords[i:i + batch_size] for i in range(0, len(selected_keywords), batch_size)]
-        print(f"[{datetime.now().strftime('%H:%M:%S')}] 📱 从{len(keywords)}个关键词中随机选择{len(selected_keywords)}个，分为{len(keywords_batches)}批进行查询")
+        # 存储所有批次获取的文章
+        all_articles = []
         
         # 构建NewsAPI请求URL
         base_url = "https://newsapi.org/v2/everything"
         
-        # 存储所有批次获取的文章
-        all_articles = []
-        
-        # 设置提前终止条件：获取到12篇文章就停止
-        early_stop_count = 12
-        
-        # 按批次获取文章
-        for i, batch_keywords in enumerate(keywords_batches):
+        # 每次只使用两个关键词
+        for i in range(0, len(shuffled_keywords), 2):
+            if i + 1 >= len(shuffled_keywords):
+                break
+                
+            batch_keywords = shuffled_keywords[i:i+2]
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] 📱 使用关键词: {', '.join(batch_keywords)}")
+            
             # 构建查询关键词
             query = " OR ".join(batch_keywords)
             
@@ -160,7 +142,7 @@ class TechNewsAgent(BaseAgent):
                 "from": (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d'),
                 "language": language,
                 "sortBy": "relevancy",
-                "pageSize": 4  # 每批次获取固定数量的文章
+                "pageSize": 2  # 每批次获取固定数量的文章
             }
             
             try:
@@ -171,18 +153,23 @@ class TechNewsAgent(BaseAgent):
                 
                 # 获取文章列表
                 batch_articles = data.get("articles", [])
-                print(f"[{datetime.now().strftime('%H:%M:%S')}] 📱 批次 {i+1}/{len(keywords_batches)}: 获取到 {len(batch_articles)} 篇文章")
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] 📱 获取到 {len(batch_articles)} 篇文章")
                 
                 # 将该批次的文章添加到总文章列表中
                 all_articles.extend(batch_articles)
                 
                 # 如果已经获取足够多的文章，可以提前退出
-                if len(all_articles) >= early_stop_count:
+                if len(all_articles) >= 10:  # 获取10篇文章后停止
                     print(f"[{datetime.now().strftime('%H:%M:%S')}] 📱 已获取足够多的文章 ({len(all_articles)} 篇)，停止查询")
                     break
                     
+                # 添加请求间隔，避免触发API限制
+                time.sleep(1)  # 每次请求后等待1秒
+                    
             except Exception as e:
-                print(f"[{datetime.now().strftime('%H:%M:%S')}] ❌ 获取{lang_label}科技新闻批次 {i+1} 失败: {e}")
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] ❌ 获取{lang_label}科技新闻失败: {e}")
+                # 如果遇到错误，等待更长时间再重试
+                time.sleep(5)
         
         # 去除可能的重复文章（基于URL）
         unique_articles = []
@@ -228,7 +215,9 @@ class TechNewsAgent(BaseAgent):
         article_text = "\n\n".join(article_summaries)
         
         prompt = f"""你是一个专业的IT科技新闻编辑，请从以下{language_label}IT科技新闻中选择{max_articles}篇最重要、最有影响力的文章，它们应该涵盖重要技术突破、产业动态或具有广泛影响的IT新闻。
-        
+
+请注意，人工智能(AI)、机器学习、大模型、自然语言处理、计算机视觉等领域都属于科技类别，应优先选择这些领域的新闻。此外，软件开发、硬件技术、云计算、数据科学、区块链、元宇宙、VR/AR、物联网、5G/6G等技术创新也属于科技范畴。
+
 新闻列表:
 {article_text}
 

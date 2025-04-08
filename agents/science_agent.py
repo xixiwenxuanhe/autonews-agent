@@ -1,6 +1,7 @@
 import requests
 from datetime import datetime, timedelta
 from .base_agent import BaseAgent
+import time  # 添加time模块
 
 class ScienceNewsAgent(BaseAgent):
     """科学新闻智能体"""
@@ -10,80 +11,37 @@ class ScienceNewsAgent(BaseAgent):
         super().__init__()
         self.categories = ["science"]
         self.en_keywords = [
-            # 基础科学领域
-            "science", "scientific discovery", "scientific research", "laboratory", "experiment",
-            "scientific breakthrough", "scientific innovation", "scientific theory",
-            "scientific study", "scientific method", "scientific evidence", "scientists",
+            # 材料科学
+            "materials science", "nanomaterials", "polymer", "catalyst", "synthesis",
             
-            # 生命科学
-            "biology", "biological", "microbiology", "molecular biology", "genetics", 
-            "genomics", "DNA", "RNA", "protein", "cell biology", "evolutionary biology",
-            "ecology", "biodiversity", "ecosystem", "species", "conservation biology",
-            
-            # 医学与健康
-            "medicine", "medical research", "medical breakthrough", "health science", 
-            "clinical trial", "drug discovery", "pharmaceutical", "disease", "vaccine",
-            "pathogen", "immunology", "epidemiology", "public health", "global health",
-            
-            # 生物技术
-            "biotech", "biotechnology", "genetic engineering", "CRISPR", "gene editing",
-            "synthetic biology", "bioinformatics", "biomaterials", "biofuel", 
-            "biomedical engineering", "tissue engineering", "stem cells",
-            
-            # 物理学
-            "physics", "astrophysics", "particle physics", "quantum physics", "quantum mechanics",
-            "theoretical physics", "nuclear physics", "plasma physics", "condensed matter physics",
-            "relativity", "dark matter", "dark energy", "gravitational waves",
+            # 生物学
+            "biology", "genetics", "DNA", "RNA", "protein", "cell biology",
             
             # 化学
-            "chemistry", "biochemistry", "chemical", "organic chemistry", "inorganic chemistry",
-            "analytical chemistry", "physical chemistry", "polymer", "catalyst", "molecule",
-            "reaction", "synthesis", "nanomaterials", "electrochemistry",
+            "chemistry", "organic chemistry", "inorganic chemistry", "analytical chemistry",
+            
+            # 物理学
+            "physics", "quantum physics", "particle physics", "condensed matter physics",
             
             # 地球与环境科学
-            "earth science", "geology", "geophysics", "meteorology", "climatology", 
-            "oceanography", "atmospheric science", "environmental science", "climate change",
-            "global warming", "carbon emissions", "sustainability", "renewable energy",
-            
-            # 太空科学
-            "astronomy", "space science", "cosmology", "planet", "solar system", "galaxy",
-            "universe", "NASA", "space exploration", "space telescope", "exoplanet",
-            "mars mission", "space station", "satellite", "rocket", "spacecraft"
+            "earth science", "geology", "climate change", "environmental science"
         ]
         
         self.zh_keywords = [
-            # 基础科学领域
-            "科学", "科学发现", "科学研究", "实验室", "实验", "科学突破", "科学创新", 
-            "科学理论", "科学研究", "科学方法", "科学证据", "科学家", "院士",
+            # 材料科学
+            "材料科学", "纳米材料", "聚合物", "催化剂", "合成",
             
-            # 生命科学
-            "生物学", "生物", "微生物学", "分子生物学", "遗传学", "基因组学", 
-            "DNA", "RNA", "蛋白质", "细胞生物学", "进化生物学", "生态学", 
-            "生物多样性", "生态系统", "物种", "保护生物学",
-            
-            # 医学与健康
-            "医学", "医学研究", "医学突破", "健康科学", "临床试验", "药物发现", 
-            "制药", "疾病", "疫苗", "病原体", "免疫学", "流行病学", "公共卫生", "全球健康",
-            
-            # 生物技术
-            "生物技术", "基因工程", "基因编辑", "CRISPR", "合成生物学", "生物信息学", 
-            "生物材料", "生物燃料", "生物医学工程", "组织工程", "干细胞",
-            
-            # 物理学
-            "物理学", "天体物理学", "粒子物理学", "量子物理学", "量子力学", "理论物理学", 
-            "核物理学", "等离子体物理学", "凝聚态物理学", "相对论", "暗物质", "暗能量", "引力波",
+            # 生物学
+            "生物学", "遗传学", "DNA", "RNA", "蛋白质", "细胞生物学",
             
             # 化学
-            "化学", "生物化学", "有机化学", "无机化学", "分析化学", "物理化学", 
-            "聚合物", "催化剂", "分子", "化学反应", "合成", "纳米材料", "电化学",
+            "化学", "有机化学", "无机化学", "分析化学",
+            
+            # 物理学
+            "物理学", "量子物理", "粒子物理", "凝聚态物理",
             
             # 地球与环境科学
-            "地球科学", "地质学", "地球物理学", "气象学", "气候学", "海洋学", 
-            "大气科学", "环境科学", "气候变化", "全球变暖", "碳排放", "可持续发展", "可再生能源",
-            
-            # 太空科学
-            "天文学", "太空科学", "宇宙学", "行星", "太阳系", "银河系", "宇宙", 
-            "航天", "太空探索", "天文望远镜", "系外行星", "火星任务", "空间站", "卫星", "火箭", "宇宙飞船"
+            "地球科学", "地质学", "气候变化", "环境科学"
         ]
     
     def collect_news(self, max_articles=5):
@@ -155,30 +113,26 @@ class ScienceNewsAgent(BaseAgent):
         
         # 导入随机模块
         import random
+        import time  # 添加time模块
         
         # 随机打乱关键词顺序
         shuffled_keywords = keywords.copy()
         random.shuffle(shuffled_keywords)
         
-        # 只选取前30个关键词，避免过多查询
-        selected_keywords = shuffled_keywords[:30]
-        
-        # 将关键词分批处理，每批最多10个关键词
-        batch_size = 10
-        keywords_batches = [selected_keywords[i:i + batch_size] for i in range(0, len(selected_keywords), batch_size)]
-        print(f"[{datetime.now().strftime('%H:%M:%S')}] 🔬 从{len(keywords)}个关键词中随机选择{len(selected_keywords)}个，分为{len(keywords_batches)}批进行查询")
+        # 存储所有批次获取的文章
+        all_articles = []
         
         # 构建NewsAPI请求URL
         base_url = "https://newsapi.org/v2/everything"
         
-        # 存储所有批次获取的文章
-        all_articles = []
-        
-        # 设置提前终止条件：获取到12篇文章就停止
-        early_stop_count = 12
-        
-        # 按批次获取文章
-        for i, batch_keywords in enumerate(keywords_batches):
+        # 每次只使用两个关键词
+        for i in range(0, len(shuffled_keywords), 2):
+            if i + 1 >= len(shuffled_keywords):
+                break
+                
+            batch_keywords = shuffled_keywords[i:i+2]
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] 🔬 使用关键词: {', '.join(batch_keywords)}")
+            
             # 构建查询关键词
             query = " OR ".join(batch_keywords)
             
@@ -189,7 +143,7 @@ class ScienceNewsAgent(BaseAgent):
                 "from": (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d'),
                 "language": language,
                 "sortBy": "relevancy",
-                "pageSize": 4  # 每批次获取固定数量的文章
+                "pageSize": 2  # 每批次获取固定数量的文章
             }
             
             try:
@@ -200,18 +154,23 @@ class ScienceNewsAgent(BaseAgent):
                 
                 # 获取文章列表
                 batch_articles = data.get("articles", [])
-                print(f"[{datetime.now().strftime('%H:%M:%S')}] 🔬 批次 {i+1}/{len(keywords_batches)}: 获取到 {len(batch_articles)} 篇文章")
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] 🔬 获取到 {len(batch_articles)} 篇文章")
                 
                 # 将该批次的文章添加到总文章列表中
                 all_articles.extend(batch_articles)
                 
                 # 如果已经获取足够多的文章，可以提前退出
-                if len(all_articles) >= early_stop_count:
+                if len(all_articles) >= 10:  # 获取10篇文章后停止
                     print(f"[{datetime.now().strftime('%H:%M:%S')}] 🔬 已获取足够多的文章 ({len(all_articles)} 篇)，停止查询")
                     break
                     
+                # 添加请求间隔，避免触发API限制
+                time.sleep(1)  # 每次请求后等待1秒
+                    
             except Exception as e:
-                print(f"[{datetime.now().strftime('%H:%M:%S')}] ❌ 获取{lang_label}科学新闻批次 {i+1} 失败: {e}")
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] ❌ 获取{lang_label}科学新闻失败: {e}")
+                # 如果遇到错误，等待更长时间再重试
+                time.sleep(5)
         
         # 去除可能的重复文章（基于URL）
         unique_articles = []
@@ -257,7 +216,9 @@ class ScienceNewsAgent(BaseAgent):
         article_text = "\n\n".join(article_summaries)
         
         prompt = f"""你是一个专业的科学新闻编辑，请从以下{language_label}科学新闻中选择{max_articles}篇最重要、最有影响力的文章，它们应该涵盖重要科学发现、研究突破或具有潜在应用价值的科学进展。
-        
+
+请注意，科学领域应主要关注材料科学、生物学、化学、物理学、天文学、地球科学、环境科学等基础研究领域的新闻。特别是新材料开发、生物医学研究、化学合成、实验室突破等纯科学研究成果。人工智能(AI)和计算机技术相关内容应归类为科技而非科学，请不要选择这类文章。
+
 新闻列表:
 {article_text}
 

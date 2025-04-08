@@ -1,6 +1,7 @@
 import requests
 from datetime import datetime, timedelta
 from .base_agent import BaseAgent
+import time  # 添加time模块
 
 class EconomyNewsAgent(BaseAgent):
     """经济新闻智能体"""
@@ -10,64 +11,47 @@ class EconomyNewsAgent(BaseAgent):
         super().__init__()
         self.categories = ["business"]
         self.en_keywords = [
+            # 股票市场
+            "stock market", "stock exchange", "equity", "market volatility",
+            "bull market", "bear market", "trading", "securities",
+            
             # 宏观经济
-            "economy", "economic", "GDP", "inflation", "recession", "economic growth", 
-            "monetary policy", "fiscal policy", "interest rate", "central bank", 
-            "economic forecast", "economic outlook", "economic indicator",
+            "GDP", "inflation", "economic growth", "monetary policy",
+            "fiscal policy", "interest rate", "central bank",
             
-            # 金融市场
-            "finance", "financial", "market", "stock market", "bond market", 
-            "stock exchange", "securities", "equity", "market volatility", 
-            "bull market", "bear market", "trading", "derivatives",
+            # 投资与金融
+            "investment", "portfolio", "asset management", "wealth management",
+            "hedge fund", "mutual fund", "ETF", "dividend",
             
-            # 投资相关
-            "investment", "investor", "portfolio", "asset management", "wealth management",
-            "hedge fund", "private equity", "venture capital", "mutual fund", "ETF",
-            "dividend", "capital gains", "investment strategy", "return on investment",
+            # 企业财务
+            "earnings", "revenue", "profit", "quarterly report",
+            "balance sheet", "income statement", "cash flow",
             
-            # 企业财务与运营
-            "business", "corporate", "earnings", "revenue", "profit", "loss", 
-            "quarterly report", "balance sheet", "income statement", "cash flow",
-            "merger", "acquisition", "IPO", "initial public offering", "bankruptcy",
-            
-            # 国际贸易与关系
-            "trade", "tariff", "trade deficit", "trade surplus", "trade war", 
-            "global economy", "economic sanctions", "trade agreement", "export", "import",
-            "economic cooperation", "economic integration", "globalization",
-            
-            # 行业与趋势
-            "industry", "sector", "retail", "manufacturing", "technology sector", 
-            "energy market", "real estate market", "commodities", "oil price", 
-            "gold price", "supply chain", "labor market", "employment", "unemployment"
+            # 国际贸易
+            "trade", "tariff", "trade deficit", "trade surplus",
+            "export", "import", "trade agreement"
         ]
         
         self.zh_keywords = [
+            # 股票市场
+            "股市", "证券交易所", "股权", "市场波动",
+            "牛市", "熊市", "交易", "证券",
+            
             # 宏观经济
-            "经济", "宏观经济", "国民生产总值", "GDP", "通货膨胀", "通胀", "经济衰退", 
-            "经济增长", "货币政策", "财政政策", "利率", "央行", "中央银行", 
-            "经济预测", "经济展望", "经济指标", "经济数据",
+            "GDP", "通货膨胀", "经济增长", "货币政策",
+            "财政政策", "利率", "央行",
             
-            # 金融市场
-            "金融", "金融市场", "股市", "债券市场", "证券交易所", "证券", "股权", 
-            "市场波动", "牛市", "熊市", "交易", "衍生品", "期货", "期权",
+            # 投资与金融
+            "投资", "投资组合", "资产管理", "财富管理",
+            "对冲基金", "共同基金", "交易所交易基金", "分红",
             
-            # 投资相关
-            "投资", "投资者", "投资组合", "资产管理", "财富管理", "对冲基金", 
-            "私募股权", "风险投资", "共同基金", "交易所交易基金", "分红", 
-            "资本收益", "投资策略", "投资回报", "理财",
+            # 企业财务
+            "盈利", "营收", "利润", "季度报告",
+            "资产负债表", "利润表", "现金流",
             
-            # 企业财务与运营
-            "商业", "企业", "盈利", "营收", "利润", "亏损", "季度报告", "资产负债表", 
-            "利润表", "现金流", "并购", "首次公开募股", "IPO", "破产", "公司财报",
-            
-            # 国际贸易与关系
-            "贸易", "关税", "贸易逆差", "贸易顺差", "贸易战", "全球经济", "经济制裁", 
-            "贸易协议", "出口", "进口", "经济合作", "经济一体化", "全球化",
-            
-            # 行业与趋势
-            "产业", "行业", "零售业", "制造业", "科技行业", "能源市场", "房地产市场", 
-            "大宗商品", "油价", "金价", "供应链", "劳动力市场", "就业", "失业", 
-            "数字经济", "共享经济", "平台经济", "经济转型"
+            # 国际贸易
+            "贸易", "关税", "贸易逆差", "贸易顺差",
+            "出口", "进口", "贸易协议"
         ]
     
     def collect_news(self, max_articles=5):
@@ -139,30 +123,26 @@ class EconomyNewsAgent(BaseAgent):
         
         # 导入随机模块
         import random
+        import time  # 添加time模块
         
         # 随机打乱关键词顺序
         shuffled_keywords = keywords.copy()
         random.shuffle(shuffled_keywords)
         
-        # 只选取前30个关键词，避免过多查询
-        selected_keywords = shuffled_keywords[:30]
-        
-        # 将关键词分批处理，每批最多10个关键词
-        batch_size = 10
-        keywords_batches = [selected_keywords[i:i + batch_size] for i in range(0, len(selected_keywords), batch_size)]
-        print(f"[{datetime.now().strftime('%H:%M:%S')}] 💰 从{len(keywords)}个关键词中随机选择{len(selected_keywords)}个，分为{len(keywords_batches)}批进行查询")
+        # 存储所有批次获取的文章
+        all_articles = []
         
         # 构建NewsAPI请求URL
         base_url = "https://newsapi.org/v2/everything"
         
-        # 存储所有批次获取的文章
-        all_articles = []
-        
-        # 设置提前终止条件：获取到12篇文章就停止
-        early_stop_count = 12
-        
-        # 按批次获取文章
-        for i, batch_keywords in enumerate(keywords_batches):
+        # 每次只使用两个关键词
+        for i in range(0, len(shuffled_keywords), 2):
+            if i + 1 >= len(shuffled_keywords):
+                break
+                
+            batch_keywords = shuffled_keywords[i:i+2]
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] 💰 使用关键词: {', '.join(batch_keywords)}")
+            
             # 构建查询关键词
             query = " OR ".join(batch_keywords)
             
@@ -173,7 +153,7 @@ class EconomyNewsAgent(BaseAgent):
                 "from": (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d'),
                 "language": language,
                 "sortBy": "relevancy",
-                "pageSize": 4  # 每批次获取固定数量的文章
+                "pageSize": 2  # 每批次获取固定数量的文章
             }
             
             try:
@@ -184,18 +164,23 @@ class EconomyNewsAgent(BaseAgent):
                 
                 # 获取文章列表
                 batch_articles = data.get("articles", [])
-                print(f"[{datetime.now().strftime('%H:%M:%S')}] 💰 批次 {i+1}/{len(keywords_batches)}: 获取到 {len(batch_articles)} 篇文章")
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] 💰 获取到 {len(batch_articles)} 篇文章")
                 
                 # 将该批次的文章添加到总文章列表中
                 all_articles.extend(batch_articles)
                 
                 # 如果已经获取足够多的文章，可以提前退出
-                if len(all_articles) >= early_stop_count:
+                if len(all_articles) >= 10:  # 获取10篇文章后停止
                     print(f"[{datetime.now().strftime('%H:%M:%S')}] 💰 已获取足够多的文章 ({len(all_articles)} 篇)，停止查询")
                     break
                     
+                # 添加请求间隔，避免触发API限制
+                time.sleep(1)  # 每次请求后等待1秒
+                    
             except Exception as e:
-                print(f"[{datetime.now().strftime('%H:%M:%S')}] ❌ 获取{lang_label}经济新闻批次 {i+1} 失败: {e}")
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] ❌ 获取{lang_label}经济新闻失败: {e}")
+                # 如果遇到错误，等待更长时间再重试
+                time.sleep(5)
         
         # 去除可能的重复文章（基于URL）
         unique_articles = []
@@ -241,7 +226,9 @@ class EconomyNewsAgent(BaseAgent):
         article_text = "\n\n".join(article_summaries)
         
         prompt = f"""你是一个专业的经济金融新闻编辑，请从以下{language_label}经济新闻中选择{max_articles}篇最重要、最有影响力的文章，它们应该涵盖重大经济事件、金融市场动态或具有广泛影响的产业变革。
-        
+
+请注意，经济新闻应主要关注股票市场、金融投资、宏观经济政策、贸易关系、企业财报、商业并购等纯经济金融领域的内容。尽量避免选择科技创新、AI发展、数字技术等科技领域的新闻，即使它们可能对经济有影响。请优先选择传统金融市场、股票债券、汇率变动、经济指标等内容的文章。
+
 新闻列表:
 {article_text}
 
