@@ -41,6 +41,52 @@ class SearchAgent(BaseAgent):
         # 存储预先生成的关键词对
         self.prepared_keywords = {}
         
+        # 硬编码的关键词对，确保科学领域获取物理、生物、化学相关文章
+        self.hard_coded_keywords = {
+            "technology": {
+                "en": [
+                    ["software development", "programming language"],
+                    ["cybersecurity", "data privacy"],
+                    ["internet of things", "smart devices"],
+                    ["virtual reality", "augmented reality"]
+                ],
+                "zh": [
+                    ["区块链", "加密货币"],
+                    ["5G", "通信技术"],
+                    ["自动驾驶", "智能交通"],
+                    ["云计算", "边缘计算"]
+                ]
+            },
+            "science": {
+                "en": [
+                    ["physics", "quantum mechanics"],
+                    ["biology", "genetics"],
+                    ["chemistry", "molecular structure"],
+                    ["astronomy", "astrophysics"]
+                ],
+                "zh": [
+                    ["物理学", "量子力学"],
+                    ["生物学", "基因研究"],
+                    ["化学", "分子结构"],
+                    ["天文学", "宇宙探索"]
+                ]
+            },
+            "economy": {
+                "en": [
+                    ["stock market", "investment"],
+                    ["central bank", "monetary policy"],
+                    ["inflation", "interest rates"],
+                    ["trade agreement", "global commerce"]
+                ],
+                "zh": [
+                    ["股市", "投资策略"],
+                    ["央行", "货币政策"],
+                    ["通货膨胀", "利率调整"],
+                    ["贸易协定", "国际贸易"]
+                ]
+            }
+        }
+        
         # 定义领域对应的提示语
         self.domain_prompts = {
             "technology": """
@@ -52,7 +98,7 @@ class SearchAgent(BaseAgent):
             "science": """
                 你是一位科学新闻筛选专家。请选择最重要和最具影响力的科学研究文章。
                 优先考虑材料科学、生物学、化学、物理学、天文学、地球科学和环境科学方面的重大科学发现和突破。
-                人工智能、计算机技术及相关内容应归类为技术而非科学，请勿选择此类文章。
+                特别注意：请勿选择人工智能、计算机技术及相关内容此类文章。
                 请确保所选文章涵盖对人类知识有重大贡献的基础研究领域的重要发现。
             """,
             "economy": """
@@ -63,12 +109,13 @@ class SearchAgent(BaseAgent):
             """
         }
     
-    def prepare_all_keywords(self, num_keyword_pairs=4):
+    def prepare_all_keywords(self, num_keyword_pairs=4, hard=False):
         """
         一次性为所有领域预先生成关键词对
         
         Args:
             num_keyword_pairs: 每个领域每种语言选择的关键词对数量
+            hard: 是否使用硬编码的关键词对
         
         Returns:
             Dict: 按领域和语言分类的关键词对
@@ -78,8 +125,13 @@ class SearchAgent(BaseAgent):
         for domain in self.domains:
             print(f"\n为{domain}领域选择关键词...")
             
-            # 同时获取中英文关键词对
-            keyword_pairs = self._select_bilingual_keyword_pairs(domain, num_keyword_pairs)
+            if hard:
+                # 使用硬编码的关键词对
+                keyword_pairs = self.hard_coded_keywords[domain]
+                print("使用硬编码的关键词对...")
+            else:
+                # 同时获取中英文关键词对
+                keyword_pairs = self._select_bilingual_keyword_pairs(domain, num_keyword_pairs)
             
             # 存储结果
             self.prepared_keywords[domain] = keyword_pairs
@@ -96,7 +148,7 @@ class SearchAgent(BaseAgent):
         print("\n所有关键词对已预生成完毕！")
         return self.prepared_keywords
     
-    def collect_news(self, num_keyword_pairs=4, max_articles_per_language=10, use_prepared_keywords=True):
+    def collect_news(self, num_keyword_pairs=4, max_articles_per_language=10, use_prepared_keywords=True, hard=False):
         """
         收集各个领域的新闻
         
@@ -104,6 +156,7 @@ class SearchAgent(BaseAgent):
             num_keyword_pairs: 每个领域每种语言选择的关键词对数量
             max_articles_per_language: 每个领域每种语言最多保留的文章数量
             use_prepared_keywords: 是否使用预先生成的关键词对
+            hard: 是否使用硬编码的关键词对
         
         Returns:
             Dict: 按领域分类的新闻文章
@@ -112,7 +165,7 @@ class SearchAgent(BaseAgent):
         
         # 如果需要使用预生成的关键词对但还没有生成，则先生成
         if use_prepared_keywords and not self.prepared_keywords:
-            self.prepare_all_keywords(num_keyword_pairs)
+            self.prepare_all_keywords(num_keyword_pairs, hard)
         
         for domain in self.domains:
             print(f"正在收集{domain}领域的新闻...")
@@ -121,6 +174,10 @@ class SearchAgent(BaseAgent):
             if use_prepared_keywords and domain in self.prepared_keywords:
                 keyword_pairs = self.prepared_keywords[domain]
                 print(f"使用预生成的{domain}领域关键词对...")
+            elif hard:
+                # 使用硬编码的关键词对
+                keyword_pairs = self.hard_coded_keywords[domain]
+                print(f"使用硬编码的{domain}领域关键词对...")
             else:
                 # 为每个领域同时选择中英文关键词对
                 print(f"\n为{domain}领域选择关键词...")
@@ -159,6 +216,11 @@ class SearchAgent(BaseAgent):
             # 保存结果
             results[domain] = domain_articles
             self.collected_articles[domain] = domain_articles
+        
+        # 如果使用硬编码关键词，则自动打印结果
+        if hard:
+            print("\n===== 搜索结果 =====")
+            self.print_search_results(show_content=False)
             
         return results
     
@@ -242,109 +304,26 @@ class SearchAgent(BaseAgent):
         }}
         """
         
-        try:
-            response = self.call_llm_api(prompt)
-            # 解析LLM回复中的JSON
-            response_text = response.strip()
-            # 找到JSON部分
-            start_idx = response_text.find('{')
-            end_idx = response_text.rfind('}') + 1
-            
-            if start_idx != -1 and end_idx != -1:
-                json_str = response_text[start_idx:end_idx]
-                try:
-                    selected_pairs = json.loads(json_str)
-                    
-                    # 验证JSON结构
-                    if not isinstance(selected_pairs, dict) or "en" not in selected_pairs or "zh" not in selected_pairs:
-                        raise ValueError("无效的JSON结构")
-                    
-                    # 确保每对都有2个关键词
-                    en_valid_pairs = [pair for pair in selected_pairs["en"] if len(pair) == 2]
-                    zh_valid_pairs = [pair for pair in selected_pairs["zh"] if len(pair) == 2]
-                    
-                    # 如果LLM没有生成足够的对，则补充
-                    if len(en_valid_pairs) < num_pairs:
-                        remaining_count = num_pairs - len(en_valid_pairs)
-                        remaining_pairs = random.sample(en_keywords, min(remaining_count, len(en_keywords)))
-                        en_valid_pairs.extend(remaining_pairs)
-                    
-                    if len(zh_valid_pairs) < num_pairs:
-                        remaining_count = num_pairs - len(zh_valid_pairs)
-                        remaining_pairs = random.sample(zh_keywords, min(remaining_count, len(zh_keywords)))
-                        zh_valid_pairs.extend(remaining_pairs)
-                    
-                    # 检查是否存在明显的翻译对应关系
-                    self._check_keyword_uniqueness(en_valid_pairs, zh_valid_pairs)
-                    
-                    return {
-                        "en": en_valid_pairs[:num_pairs],
-                        "zh": zh_valid_pairs[:num_pairs]
-                    }
-                except json.JSONDecodeError:
-                    # JSON解析失败
-                    print(f"JSON解析失败，将使用随机选择")
-                    return self._fallback_keyword_selection(en_keywords, zh_keywords, num_pairs)
-            else:
-                # 找不到JSON
-                print(f"无法识别JSON结构，将使用随机选择")
-                return self._fallback_keyword_selection(en_keywords, zh_keywords, num_pairs)
-        except Exception as e:
-            print(f"LLM关键词选择出错: {e}")
-            # 出错时随机选择
-            return self._fallback_keyword_selection(en_keywords, zh_keywords, num_pairs)
-    
-    def _check_keyword_uniqueness(self, en_pairs, zh_pairs):
-        """
-        检查中英文关键词对是否有明显的对应关系，并打印警告
+        # 调用LLM API获取关键词对
+        response = self.call_llm_api(prompt)
+        response_text = response.strip()
         
-        Args:
-            en_pairs: 英文关键词对列表
-            zh_pairs: 中文关键词对列表
-        """
-        # 常见的中英文对应关系
-        common_translations = {
-            "ai": "人工智能",
-            "artificial intelligence": "人工智能",
-            "machine learning": "机器学习",
-            "deep learning": "深度学习",
-            "big data": "大数据",
-            "cloud computing": "云计算",
-            "blockchain": "区块链",
-            "quantum": "量子",
-            "robotics": "机器人",
-            "autonomous": "自动驾驶",
-            "5g": "5g",
-            "iot": "物联网",
-            "internet of things": "物联网",
-            "vr": "虚拟现实",
-            "ar": "增强现实",
-            "metaverse": "元宇宙"
-        }
+        # 找到JSON部分
+        start_idx = response_text.find('{')
+        end_idx = response_text.rfind('}') + 1
         
-        # 扁平化关键词列表以便于比较
-        en_flat = [word.lower() for pair in en_pairs for word in pair]
-        zh_flat = [word for pair in zh_pairs for word in pair]
+        # 解析JSON
+        json_str = response_text[start_idx:end_idx]
+        selected_pairs = json.loads(json_str)
         
-        # 检查是否存在对应关系
-        potential_matches = []
-        for en_word in en_flat:
-            for zh_word in zh_flat:
-                if en_word in common_translations and common_translations[en_word] == zh_word:
-                    potential_matches.append((en_word, zh_word))
+        # 确保每对都有2个关键词
+        en_valid_pairs = [pair for pair in selected_pairs["en"] if len(pair) == 2]
+        zh_valid_pairs = [pair for pair in selected_pairs["zh"] if len(pair) == 2]
         
-        # 如果存在明显对应，打印警告
-        if potential_matches:
-            print("\n警告：检测到中英文关键词存在以下对应关系，可能会导致搜索结果重复:")
-            for en, zh in potential_matches:
-                print(f"  - '{en}' 对应 '{zh}'")
-            print("建议在搜索前手动调整关键词以获得更多样化的结果。\n")
-    
-    def _fallback_keyword_selection(self, en_keywords, zh_keywords, num_pairs):
-        """当LLM选择失败时，使用随机选择作为后备方案"""
+        # 构建并返回结果
         return {
-            "en": random.sample(en_keywords, min(num_pairs, len(en_keywords))),
-            "zh": random.sample(zh_keywords, min(num_pairs, len(zh_keywords)))
+            "en": en_valid_pairs[:num_pairs],
+            "zh": zh_valid_pairs[:num_pairs]
         }
     
     def _process_language_articles(self, articles: List[Dict], domain: str, language: str, max_articles: int) -> List[Dict]:
@@ -360,9 +339,11 @@ class SearchAgent(BaseAgent):
         Returns:
             List[Dict]: 处理后的文章列表
         """
-        # 去重
+        print(f"收集到{len(articles)}篇{language}文章")
+        
+        # 首先去重
         unique_articles = self._remove_duplicates(articles)
-        print(f"去重后共{len(unique_articles)}篇{language}文章")
+        print(f"去重后剩余{len(unique_articles)}篇{language}文章")
         
         # 如果文章数量不足，直接返回
         if len(unique_articles) <= max_articles:
@@ -377,6 +358,43 @@ class SearchAgent(BaseAgent):
         print(f"筛选后保留{len(formatted_articles)}篇{language}文章")
         
         return formatted_articles
+    
+    def _remove_duplicates(self, articles: List[Dict]) -> List[Dict]:
+        """
+        移除重复的文章
+        
+        Args:
+            articles: 文章列表
+        
+        Returns:
+            List[Dict]: 去重后的文章列表
+        """
+        if not articles:
+            return []
+            
+        # 使用URL作为唯一标识
+        seen_urls = set()
+        unique_articles = []
+        
+        for article in articles:
+            url = article.get('url', '')
+            
+            # 只保留URL未见过的文章
+            if url and url not in seen_urls:
+                seen_urls.add(url)
+                unique_articles.append(article)
+            
+            # 如果URL为空，使用标题+来源作为备用标识
+            elif not url:
+                title = article.get('title', '')
+                source = article.get('source', {}).get('name', '')
+                key = f"{title}_{source}"
+                
+                if key and key not in seen_urls:
+                    seen_urls.add(key)
+                    unique_articles.append(article)
+                
+        return unique_articles
     
     def _collect_domain_news(self, domain: str, language: str, keyword_pairs: List[List[str]]) -> List[Dict]:
         """
@@ -395,9 +413,9 @@ class SearchAgent(BaseAgent):
         # 根据语言设置API参数
         language_param = 'en' if language == 'en' else 'zh'
         
-        # 获取当前日期和30天前的日期
+        # 获取当前日期和7天前的日期，提高信息时效性
         today = datetime.date.today()
-        month_ago = today - datetime.timedelta(days=30)
+        week_ago = today - datetime.timedelta(days=7)
         
         # 为每对关键词执行搜索
         for keyword_pair in keyword_pairs:
@@ -409,61 +427,70 @@ class SearchAgent(BaseAgent):
                 'apiKey': self.api_key,
                 'q': query,
                 'language': language_param,
-                'from': month_ago.isoformat(),
+                'from': week_ago.isoformat(),
                 'to': today.isoformat(),
-                'sortBy': 'relevancy',
-                'pageSize': 10,  # 每对关键词最多获取10篇文章
+                'sortBy': 'publishedAt',  # 按发布时间排序，优先获取最新内容
+                'pageSize': 5,  # 每对关键词最多获取5篇文章
             }
                 
-            try:
-                response = requests.get('https://newsapi.org/v2/everything', params=params)
-                data = response.json()
+            response = requests.get('https://newsapi.org/v2/everything', params=params)
+            data = response.json()
+            
+            if data.get('status') == 'ok':
+                articles = data.get('articles', [])
                 
-                if data.get('status') == 'ok':
-                    articles = data.get('articles', [])
+                # 打印获取到的文章标题，用于观察
+                print(f"\n关键词对 '{query}' 获取到 {len(articles)} 篇文章:")
+                
+                # 如果是科学领域，需要过滤掉AI相关的文章
+                if domain == "science":
+                    filtered_articles = []
+                    ai_keywords = ["AI", "人工智能", "artificial intelligence", "machine learning", 
+                                  "机器学习", "深度学习", "deep learning", "大模型", "large model", 
+                                  "LLM", "GPT", "大语言模型", "ChatGPT", "Llama", "DeepMind"]
                     
-                    # 为每篇文章添加领域和关键词信息
                     for article in articles:
-                        article['domain'] = domain
-                        article['search_keywords'] = keyword_pair
-                        article['language'] = 'en' if language == 'en' else 'zh'
-                        collected_articles.append(article)
+                        title = article.get('title', 'No title')
+                        description = article.get('description', '')
+                        content = article.get('content', '')
                         
-                else:
-                    error_msg = data.get('message', '未知错误')
-                    print(f"API响应错误: {error_msg}")
+                        # 检查标题、描述和内容中是否包含AI关键词
+                        contains_ai = False
+                        for kw in ai_keywords:
+                            if (kw.lower() in title.lower() or 
+                                kw.lower() in description.lower() or 
+                                kw.lower() in content.lower()):
+                                contains_ai = True
+                                break
+                                
+                        if not contains_ai:
+                            filtered_articles.append(article)
+                            print(f"  {len(filtered_articles)}. {title}  ✅")
+                        else:
+                            print(f"  [已过滤] {title}  ❌ (包含AI相关内容)")
                     
-            except Exception as e:
-                print(f"请求新闻API时出错: {e}")
+                    articles = filtered_articles
+                else:
+                    # 非科学领域，正常打印文章
+                    for i, article in enumerate(articles):
+                        title = article.get('title', 'No title')
+                        print(f"  {i+1}. {title}")
+                
+                # 为每篇文章添加领域和关键词信息
+                for article in articles:
+                    article['domain'] = domain
+                    article['search_keywords'] = keyword_pair
+                    article['language'] = 'en' if language == 'en' else 'zh'
+                    collected_articles.append(article)
+            else:
+                error_msg = data.get('message', '未知错误')
+                print(f"API响应错误: {error_msg}")
                 
             # 简单的延迟，以避免API速率限制
             import time
             time.sleep(1)
                 
         return collected_articles
-    
-    def _remove_duplicates(self, articles: List[Dict]) -> List[Dict]:
-        """
-        移除重复的文章
-        
-        Args:
-            articles: 文章列表
-        
-        Returns:
-            List[Dict]: 去重后的文章列表
-        """
-        # 使用标题和URL作为唯一标识
-        unique_articles = {}
-        
-        for article in articles:
-            # 创建唯一键
-            key = f"{article.get('title', '')}{article.get('url', '')}"
-            
-            # 只保留未见过的文章
-            if key not in unique_articles:
-                unique_articles[key] = article
-                
-        return list(unique_articles.values())
     
     def _filter_relevant_articles(self, articles: List[Dict], domain: str, max_articles: int) -> List[Dict]:
         """
@@ -502,43 +529,27 @@ class SearchAgent(BaseAgent):
         [1, 5, 8, ...]
         """
         
-        try:
-            response = self.call_llm_api(prompt, temperature=0.3)
-            # 解析LLM的回复
-            response_text = response.strip()
-            
-            # 提取JSON数组
-            start_idx = response_text.find('[')
-            end_idx = response_text.rfind(']') + 1
-            
-            if start_idx != -1 and end_idx != -1:
-                json_str = response_text[start_idx:end_idx]
-                selected_indices = json.loads(json_str)
+        # 调用LLM API筛选文章
+        response = self.call_llm_api(prompt, temperature=0.3)
+        response_text = response.strip()
+        
+        # 提取JSON数组
+        start_idx = response_text.find('[')
+        end_idx = response_text.rfind(']') + 1
+        json_str = response_text[start_idx:end_idx]
+        selected_indices = json.loads(json_str)
+        
+        # 验证并调整索引
+        valid_indices = []
+        for idx in selected_indices:
+            # 将1-based索引转换为0-based索引
+            adjusted_idx = idx - 1
+            if 0 <= adjusted_idx < len(articles):
+                valid_indices.append(adjusted_idx)
                 
-                # 验证并调整索引
-                valid_indices = []
-                for idx in selected_indices:
-                    # 将1-based索引转换为0-based索引
-                    adjusted_idx = idx - 1
-                    if 0 <= adjusted_idx < len(articles):
-                        valid_indices.append(adjusted_idx)
-                
-                # 如果没有有效索引，则回退到随机选择
-                if not valid_indices:
-                    valid_indices = random.sample(range(len(articles)), min(max_articles, len(articles)))
-                    
-                # 选择文章
-                filtered_articles = [articles[i] for i in valid_indices[:max_articles]]
-                return filtered_articles
-            else:
-                # 解析失败时随机选择
-                selected_indices = random.sample(range(len(articles)), min(max_articles, len(articles)))
-                return [articles[i] for i in selected_indices]
-        except Exception as e:
-            print(f"LLM筛选文章出错: {e}")
-            # 出错时随机选择
-            selected_indices = random.sample(range(len(articles)), min(max_articles, len(articles)))
-            return [articles[i] for i in selected_indices]
+        # 选择文章
+        filtered_articles = [articles[i] for i in valid_indices[:max_articles]]
+        return filtered_articles
     
     def _format_articles(self, articles: List[Dict]) -> List[Dict]:
         """
@@ -570,20 +581,76 @@ class SearchAgent(BaseAgent):
             
         return formatted_articles
     
-    def _is_english(self, text: str) -> bool:
+    def print_search_results(self, show_content=False):
         """
-        通过ASCII字符比例判断文本是否为英文
+        打印搜索结果
         
         Args:
-            text: 要检查的文本
-        
-        Returns:
-            bool: 如果文本主要是英文则返回True
+            show_content: 是否显示文章内容，默认为False
         """
-        if not text:
-            return True
+        if not self.collected_articles:
+            print("尚未收集任何文章，请先调用collect_news方法。")
+            return
+        
+        for domain, articles in self.collected_articles.items():
+            print(f"\n{'='*20} {domain.upper()} 领域新闻 ({len(articles)}篇) {'='*20}")
             
-        # 统计ASCII字符的比例
-        ascii_count = sum(1 for c in text if ord(c) < 128)
-        return ascii_count / len(text) > 0.7  # 如果超过70%是ASCII字符，认为是英文
+            # 按语言分组
+            en_articles = [a for a in articles if a['language'] == '英文']
+            zh_articles = [a for a in articles if a['language'] == '中文']
+            
+            print(f"\n--- 英文文章 ({len(en_articles)}篇) ---")
+            for i, article in enumerate(en_articles):
+                print(f"{i+1}. {article['title']}")
+                print(f"   来源: {article['source']} | 发布时间: {article['publishedAt']}")
+                print(f"   关键词: {' AND '.join(article['keywords'])}")
+                print(f"   URL: {article['url']}")
+                if show_content and article['description']:
+                    print(f"   摘要: {article['description']}")
+                print()
+                
+            print(f"\n--- 中文文章 ({len(zh_articles)}篇) ---")
+            for i, article in enumerate(zh_articles):
+                print(f"{i+1}. {article['title']}")
+                print(f"   来源: {article['source']} | 发布时间: {article['publishedAt']}")
+                print(f"   关键词: {' AND '.join(article['keywords'])}")
+                print(f"   URL: {article['url']}")
+                if show_content and article['description']:
+                    print(f"   摘要: {article['description']}")
+                print()
+
+
+if __name__ == "__main__":
+    import argparse
+    
+    # 解析命令行参数
+    parser = argparse.ArgumentParser(description="新闻搜索代理")
+    parser.add_argument("--domains", type=str, nargs="+", default=["technology", "science", "economy"], 
+                        help="要搜索的领域，可选：technology, science, economy")
+    parser.add_argument("--num_pairs", type=int, default=4, help="每个领域每种语言的关键词对数量")
+    parser.add_argument("--max_articles", type=int, default=5, help="每个领域每种语言保留的文章数量")
+    parser.add_argument("--show_content", action="store_true", help="是否显示文章摘要")
+    parser.add_argument("--hard", action="store_true", help="是否使用硬编码的关键词对，并打印搜索结果")
+    
+    args = parser.parse_args()
+    
+    # 创建搜索代理实例
+    agent = SearchAgent(domains=args.domains)
+    
+    # 预先生成所有领域的关键词对
+    print("===== 预生成所有领域的关键词对 =====")
+    agent.prepare_all_keywords(num_keyword_pairs=args.num_pairs, hard=args.hard)
+    
+    # 使用预生成的关键词对收集新闻
+    print("\n===== 使用预生成的关键词对收集新闻 =====")
+    results = agent.collect_news(num_keyword_pairs=args.num_pairs, 
+                               max_articles_per_language=args.max_articles, 
+                               use_prepared_keywords=True,
+                               hard=args.hard)
+    
+    # 如果使用硬编码关键词，则自动打印结果
+    if args.hard:
+        print("\n===== 搜索结果 =====")
+        agent.print_search_results(show_content=args.show_content)
+
 

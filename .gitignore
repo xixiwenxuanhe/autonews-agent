@@ -1,6 +1,8 @@
 # 环境变量文件
 .env
 
+runtime.log
+
 # Temp
 NOTION.md
 

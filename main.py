@@ -1,6 +1,7 @@
 import os
 import time
 import schedule
+import argparse
 from dotenv import load_dotenv
 from datetime import datetime
 
@@ -40,8 +41,12 @@ def print_debug_info(message, is_start=True, is_result=False, result=None):
     else:
         print(f"[{current_time}] ℹ️ {message}")
 
-def run_news_aggregation():
-    """运行新闻聚合流程"""
+def run_news_aggregation(hard=False):
+    """运行新闻聚合流程
+    
+    Args:
+        hard (bool): 是否使用硬编码的关键词对并打印搜索结果
+    """
     start_time = datetime.now()
     print_debug_info(f"新闻聚合流程 - {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
     
@@ -54,7 +59,7 @@ def run_news_aggregation():
     
     # 收集各类新闻
     print_debug_info("收集所有领域新闻", is_start=True)
-    all_news = search_agent.collect_news()
+    all_news = search_agent.collect_news(hard=hard)
     tech_news = all_news.get("technology", [])
     science_news = all_news.get("science", [])
     economy_news = all_news.get("economy", [])
@@ -82,16 +87,24 @@ def run_news_aggregation():
     print_debug_info(f"新闻聚合流程完成 - 总耗时: {duration:.2f} 秒", is_result=True)
 
 def main():
+    # 解析命令行参数
+    parser = argparse.ArgumentParser(description="新闻聚合系统")
+    parser.add_argument("--hard", type=str, default="false", help="是否使用硬编码的关键词对并打印搜索结果")
+    args = parser.parse_args()
+    
+    # 转换hard参数为布尔值
+    use_hard = args.hard.lower() == "true"
+    
     # 获取定时配置
     schedule_time = os.getenv("SCHEDULE_TIME", "07:00")
     
     # 设置定时任务
-    schedule.every().day.at(schedule_time).do(run_news_aggregation)
+    schedule.every().day.at(schedule_time).do(run_news_aggregation, hard=use_hard)
     
     print(f"新闻聚合系统已启动，将在每天 {schedule_time} 运行")
     
     # 立即运行一次
-    run_news_aggregation()
+    run_news_aggregation(hard=use_hard)
     
     # 持续运行定时任务
     while True:
