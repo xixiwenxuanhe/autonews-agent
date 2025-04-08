@@ -9,10 +9,66 @@ class EconomyNewsAgent(BaseAgent):
         """初始化经济新闻智能体"""
         super().__init__()
         self.categories = ["business"]
-        self.en_keywords = ["economy", "finance", "market", "stock", "trade", 
-                         "business", "economic", "financial", "investment"]
-        self.zh_keywords = ["经济", "金融", "市场", "股票", "贸易", "商业", 
-                         "投资", "证券", "财经"]
+        self.en_keywords = [
+            # 宏观经济
+            "economy", "economic", "GDP", "inflation", "recession", "economic growth", 
+            "monetary policy", "fiscal policy", "interest rate", "central bank", 
+            "economic forecast", "economic outlook", "economic indicator",
+            
+            # 金融市场
+            "finance", "financial", "market", "stock market", "bond market", 
+            "stock exchange", "securities", "equity", "market volatility", 
+            "bull market", "bear market", "trading", "derivatives",
+            
+            # 投资相关
+            "investment", "investor", "portfolio", "asset management", "wealth management",
+            "hedge fund", "private equity", "venture capital", "mutual fund", "ETF",
+            "dividend", "capital gains", "investment strategy", "return on investment",
+            
+            # 企业财务与运营
+            "business", "corporate", "earnings", "revenue", "profit", "loss", 
+            "quarterly report", "balance sheet", "income statement", "cash flow",
+            "merger", "acquisition", "IPO", "initial public offering", "bankruptcy",
+            
+            # 国际贸易与关系
+            "trade", "tariff", "trade deficit", "trade surplus", "trade war", 
+            "global economy", "economic sanctions", "trade agreement", "export", "import",
+            "economic cooperation", "economic integration", "globalization",
+            
+            # 行业与趋势
+            "industry", "sector", "retail", "manufacturing", "technology sector", 
+            "energy market", "real estate market", "commodities", "oil price", 
+            "gold price", "supply chain", "labor market", "employment", "unemployment"
+        ]
+        
+        self.zh_keywords = [
+            # 宏观经济
+            "经济", "宏观经济", "国民生产总值", "GDP", "通货膨胀", "通胀", "经济衰退", 
+            "经济增长", "货币政策", "财政政策", "利率", "央行", "中央银行", 
+            "经济预测", "经济展望", "经济指标", "经济数据",
+            
+            # 金融市场
+            "金融", "金融市场", "股市", "债券市场", "证券交易所", "证券", "股权", 
+            "市场波动", "牛市", "熊市", "交易", "衍生品", "期货", "期权",
+            
+            # 投资相关
+            "投资", "投资者", "投资组合", "资产管理", "财富管理", "对冲基金", 
+            "私募股权", "风险投资", "共同基金", "交易所交易基金", "分红", 
+            "资本收益", "投资策略", "投资回报", "理财",
+            
+            # 企业财务与运营
+            "商业", "企业", "盈利", "营收", "利润", "亏损", "季度报告", "资产负债表", 
+            "利润表", "现金流", "并购", "首次公开募股", "IPO", "破产", "公司财报",
+            
+            # 国际贸易与关系
+            "贸易", "关税", "贸易逆差", "贸易顺差", "贸易战", "全球经济", "经济制裁", 
+            "贸易协议", "出口", "进口", "经济合作", "经济一体化", "全球化",
+            
+            # 行业与趋势
+            "产业", "行业", "零售业", "制造业", "科技行业", "能源市场", "房地产市场", 
+            "大宗商品", "油价", "金价", "供应链", "劳动力市场", "就业", "失业", 
+            "数字经济", "共享经济", "平台经济", "经济转型"
+        ]
     
     def collect_news(self, max_articles=5):
         """收集经济相关新闻，包括中英文各5条
@@ -79,40 +135,85 @@ class EconomyNewsAgent(BaseAgent):
             list: 该语言的新闻文章列表
         """
         lang_label = "英文" if language == "en" else "中文"
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] 💰 获取{lang_label}经济新闻...")
+        
+        # 导入随机模块
+        import random
+        
+        # 随机打乱关键词顺序
+        shuffled_keywords = keywords.copy()
+        random.shuffle(shuffled_keywords)
+        
+        # 只选取前30个关键词，避免过多查询
+        selected_keywords = shuffled_keywords[:30]
+        
+        # 将关键词分批处理，每批最多10个关键词
+        batch_size = 10
+        keywords_batches = [selected_keywords[i:i + batch_size] for i in range(0, len(selected_keywords), batch_size)]
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] 💰 从{len(keywords)}个关键词中随机选择{len(selected_keywords)}个，分为{len(keywords_batches)}批进行查询")
+        
         # 构建NewsAPI请求URL
         base_url = "https://newsapi.org/v2/everything"
         
-        # 构建查询关键词
-        query = " OR ".join(keywords)
+        # 存储所有批次获取的文章
+        all_articles = []
         
-        # 设置请求参数
-        params = {
-            "apiKey": self.news_api_key,
-            "q": query,
-            "from": (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d'),
-            "language": language,
-            "sortBy": "relevancy",
-            "pageSize": max_articles * 2  # 获取更多文章以便筛选
-        }
+        # 设置提前终止条件：获取到12篇文章就停止
+        early_stop_count = 12
         
-        try:
-            # 发送请求
-            response = requests.get(base_url, params=params)
-            response.raise_for_status()
-            data = response.json()
+        # 按批次获取文章
+        for i, batch_keywords in enumerate(keywords_batches):
+            # 构建查询关键词
+            query = " OR ".join(batch_keywords)
             
-            # 获取文章列表
-            articles = data.get("articles", [])
+            # 设置请求参数
+            params = {
+                "apiKey": self.news_api_key,
+                "q": query,
+                "from": (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d'),
+                "language": language,
+                "sortBy": "relevancy",
+                "pageSize": 4  # 每批次获取固定数量的文章
+            }
             
-            # 使用LLM筛选最相关的文章
-            if articles:
-                return self._filter_relevant_articles(articles, max_articles, lang_label)
-            else:
-                print(f"[{datetime.now().strftime('%H:%M:%S')}] 💰 未获取到{lang_label}文章")
-                return []
+            try:
+                # 发送请求
+                response = requests.get(base_url, params=params)
+                response.raise_for_status()
+                data = response.json()
                 
-        except Exception as e:
-            print(f"[{datetime.now().strftime('%H:%M:%S')}] ❌ 获取{lang_label}经济新闻失败: {e}")
+                # 获取文章列表
+                batch_articles = data.get("articles", [])
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] 💰 批次 {i+1}/{len(keywords_batches)}: 获取到 {len(batch_articles)} 篇文章")
+                
+                # 将该批次的文章添加到总文章列表中
+                all_articles.extend(batch_articles)
+                
+                # 如果已经获取足够多的文章，可以提前退出
+                if len(all_articles) >= early_stop_count:
+                    print(f"[{datetime.now().strftime('%H:%M:%S')}] 💰 已获取足够多的文章 ({len(all_articles)} 篇)，停止查询")
+                    break
+                    
+            except Exception as e:
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] ❌ 获取{lang_label}经济新闻批次 {i+1} 失败: {e}")
+        
+        # 去除可能的重复文章（基于URL）
+        unique_articles = []
+        seen_urls = set()
+        
+        for article in all_articles:
+            url = article.get("url", "")
+            if url and url not in seen_urls:
+                seen_urls.add(url)
+                unique_articles.append(article)
+        
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] 💰 去重后共 {len(unique_articles)} 篇{lang_label}文章")
+        
+        # 使用LLM筛选最相关的文章
+        if unique_articles:
+            return self._filter_relevant_articles(unique_articles, max_articles, lang_label)
+        else:
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] 💰 未获取到{lang_label}文章")
             return []
     
     def _filter_relevant_articles(self, articles, max_articles, language_label=""):
