@@ -36,6 +36,8 @@ class EmailAgent(BaseAgent):
         Returns:
             bool: 是否发送成功
         """
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] 📧 发送邮件...")
+        
         today = datetime.now().strftime("%Y年%m月%d日")
         subject = f"每日新闻摘要 - {today}"
         
@@ -58,13 +60,11 @@ class EmailAgent(BaseAgent):
             
             # 更新发送计数
             self.sent_count += 1
-            print(f"邮件已成功发送至 {self.recipient_email}")
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] ✅ 邮件已发送至 {self.recipient_email}")
             return True
             
         except Exception as e:
-            print(f"发送邮件失败: {e}")
-            # 由于我们已经确认实际上可能已经发送成功，所以继续执行
-            print("如果您实际收到了邮件，可以忽略此错误")
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] ❌ 发送邮件失败: {e}")
             return False
     
     def get_stats(self):
@@ -73,7 +73,8 @@ class EmailAgent(BaseAgent):
         Returns:
             dict: 统计数据
         """
-        return {
+        stats = {
             "sent_count": self.sent_count,
             "last_sent": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        } 
+        }
+        return stats 

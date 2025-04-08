@@ -40,12 +40,29 @@ class ContentIntegrationAgent(BaseAgent):
         Returns:
             str: 整合后的邮件内容
         """
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] 🔄 整合新闻内容...")
+        
+        # 分类中英文新闻
+        zh_tech_news = [news for news in tech_news if news.get('language') == '中文']
+        en_tech_news = [news for news in tech_news if news.get('language') == '英文']
+        
+        zh_economy_news = [news for news in economy_news if news.get('language') == '中文']
+        en_economy_news = [news for news in economy_news if news.get('language') == '英文']
+        
+        zh_science_news = [news for news in science_news if news.get('language') == '中文']
+        en_science_news = [news for news in science_news if news.get('language') == '英文']
+        
+        # 统计各类新闻数量
+        total_zh_news = len(zh_tech_news) + len(zh_economy_news) + len(zh_science_news)
+        total_en_news = len(en_tech_news) + len(en_economy_news) + len(en_science_news)
+        
         today = datetime.now().strftime("%Y年%m月%d日")
         
         # 选择一条随机励志名言
         random_quote = random.choice(self.inspirational_quotes)
         
         # 使用大语言模型生成标题
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] 🔄 生成邮件标题...")
         title_prompt = f"""你是一个专业的新闻编辑，请为今天（{today}）的新闻摘要生成一个简洁有力的标题。
 标题应该能吸引读者注意力，并且反映当天的主要新闻内容。
 请不要超过20个字，只需要返回标题本身，不要加任何其他内容。"""
@@ -98,8 +115,15 @@ class ContentIntegrationAgent(BaseAgent):
             border-bottom: 1px solid #eee;
             padding-bottom: 5px;
         }}
+        .language-title {{
+            font-size: 18px;
+            font-weight: bold;
+            color: #666;
+            margin: 15px 0 10px 10px;
+        }}
         .news-item {{
             margin-bottom: 20px;
+            padding-left: 15px;
         }}
         .news-title {{
             font-size: 18px;
@@ -149,8 +173,28 @@ class ContentIntegrationAgent(BaseAgent):
     <div class="section">
         <h2 class="section-title">📱 IT科技新闻</h2>
 """
-            for news in tech_news:
+            # 添加中文新闻
+            if zh_tech_news:
                 html_content += f"""
+        <div class="language-title">🇨🇳 早安中国</div>
+"""
+                for news in zh_tech_news:
+                    html_content += f"""
+        <div class="news-item">
+            <div class="news-title">{news.get('title', '无标题')}</div>
+            <div class="news-source">来源: {news.get('source', '未知来源')}</div>
+            <div class="news-description">{news.get('description', '无描述')}</div>
+            <a href="{news.get('url', '#')}" class="news-link" target="_blank">阅读更多</a>
+        </div>
+"""
+            
+            # 添加英文新闻
+            if en_tech_news:
+                html_content += f"""
+        <div class="language-title">🌍 Hello World</div>
+"""
+                for news in en_tech_news:
+                    html_content += f"""
         <div class="news-item">
             <div class="news-title">{news.get('title', '无标题')}</div>
             <div class="news-source">来源: {news.get('source', '未知来源')}</div>
@@ -168,8 +212,28 @@ class ContentIntegrationAgent(BaseAgent):
     <div class="section">
         <h2 class="section-title">💰 经济新闻</h2>
 """
-            for news in economy_news:
+            # 添加中文新闻
+            if zh_economy_news:
                 html_content += f"""
+        <div class="language-title">🇨🇳 中文新闻</div>
+"""
+                for news in zh_economy_news:
+                    html_content += f"""
+        <div class="news-item">
+            <div class="news-title">{news.get('title', '无标题')}</div>
+            <div class="news-source">来源: {news.get('source', '未知来源')}</div>
+            <div class="news-description">{news.get('description', '无描述')}</div>
+            <a href="{news.get('url', '#')}" class="news-link" target="_blank">阅读更多</a>
+        </div>
+"""
+            
+            # 添加英文新闻
+            if en_economy_news:
+                html_content += f"""
+        <div class="language-title">🌍 英文新闻</div>
+"""
+                for news in en_economy_news:
+                    html_content += f"""
         <div class="news-item">
             <div class="news-title">{news.get('title', '无标题')}</div>
             <div class="news-source">来源: {news.get('source', '未知来源')}</div>
@@ -187,8 +251,28 @@ class ContentIntegrationAgent(BaseAgent):
     <div class="section">
         <h2 class="section-title">🔬 科学新闻</h2>
 """
-            for news in science_news:
+            # 添加中文新闻
+            if zh_science_news:
                 html_content += f"""
+        <div class="language-title">🇨🇳 中文新闻</div>
+"""
+                for news in zh_science_news:
+                    html_content += f"""
+        <div class="news-item">
+            <div class="news-title">{news.get('title', '无标题')}</div>
+            <div class="news-source">来源: {news.get('source', '未知来源')}</div>
+            <div class="news-description">{news.get('description', '无描述')}</div>
+            <a href="{news.get('url', '#')}" class="news-link" target="_blank">阅读更多</a>
+        </div>
+"""
+            
+            # 添加英文新闻
+            if en_science_news:
+                html_content += f"""
+        <div class="language-title">🌍 英文新闻</div>
+"""
+                for news in en_science_news:
+                    html_content += f"""
         <div class="news-item">
             <div class="news-title">{news.get('title', '无标题')}</div>
             <div class="news-source">来源: {news.get('source', '未知来源')}</div>
@@ -208,5 +292,7 @@ class ContentIntegrationAgent(BaseAgent):
 </body>
 </html>
 """
+        
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] 🔄 整合完成 (中文:{total_zh_news}, 英文:{total_en_news})")
         
         return html_content 

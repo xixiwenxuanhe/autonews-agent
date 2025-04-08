@@ -13,33 +13,80 @@ from agents.email_agent import EmailAgent
 # 加载环境变量
 load_dotenv()
 
+# 调试信息格式化函数
+def print_debug_info(message, is_start=True, is_result=False, result=None):
+    """打印格式化的调试信息
+    
+    Args:
+        message (str): 调试信息内容
+        is_start (bool): 是否是开始处理的信息
+        is_result (bool): 是否是结果信息
+        result (any): 如果是结果信息，包含的结果数据
+    """
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    if is_start:
+        print(f"\n[{current_time}] 🚀 开始处理: {message}")
+    elif is_result:
+        print(f"[{current_time}] ✅ 处理完成: {message}")
+        if result is not None:
+            if isinstance(result, list):
+                print(f"  📊 获取到 {len(result)} 条结果")
+                # 显示中英文新闻数量
+                zh_news = [news for news in result if news.get('language') == '中文']
+                en_news = [news for news in result if news.get('language') == '英文']
+                print(f"  🇨🇳 中文新闻: {len(zh_news)} 条")
+                print(f"  🌍 英文新闻: {len(en_news)} 条")
+            else:
+                print(f"  📊 结果类型: {type(result)}")
+    else:
+        print(f"[{current_time}] ℹ️ {message}")
+
 def run_news_aggregation():
     """运行新闻聚合流程"""
-    print(f"开始运行新闻聚合流程 - {datetime.now()}")
+    start_time = datetime.now()
+    print_debug_info(f"新闻聚合流程 - {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
     
     # 初始化各个智能体
+    print_debug_info("初始化智能体", is_start=True)
     tech_agent = TechNewsAgent()
     economy_agent = EconomyNewsAgent()
     science_agent = ScienceNewsAgent()
     integration_agent = ContentIntegrationAgent()
     email_agent = EmailAgent()
+    print_debug_info("初始化智能体", is_start=False, is_result=True)
     
     # 收集各类新闻
+    print_debug_info("IT科技新闻", is_start=True)
     tech_news = tech_agent.collect_news()
+    print_debug_info("IT科技新闻", is_start=False, is_result=True, result=tech_news)
+    
+    print_debug_info("经济新闻", is_start=True)
     economy_news = economy_agent.collect_news()
+    print_debug_info("经济新闻", is_start=False, is_result=True, result=economy_news)
+    
+    print_debug_info("科学新闻", is_start=True)
     science_news = science_agent.collect_news()
+    print_debug_info("科学新闻", is_start=False, is_result=True, result=science_news)
     
     # 整合内容
+    print_debug_info("整合新闻内容", is_start=True)
     email_content = integration_agent.integrate_content(
         tech_news=tech_news,
         economy_news=economy_news,
         science_news=science_news
     )
+    print_debug_info("整合新闻内容", is_start=False, is_result=True)
     
     # 发送邮件
+    print_debug_info("发送邮件", is_start=True)
     email_agent.send_email(email_content)
+    print_debug_info("发送邮件", is_start=False, is_result=True)
     
-    print(f"新闻聚合流程完成 - {datetime.now()}")
+    # 计算总耗时
+    end_time = datetime.now()
+    duration = (end_time - start_time).total_seconds()
+    print_debug_info(f"新闻聚合流程完成 - 总耗时: {duration:.2f} 秒", is_result=True)
 
 def main():
     # 获取定时配置
