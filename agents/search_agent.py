@@ -76,23 +76,22 @@ class SearchAgent(BaseAgent):
         print("开始为所有领域预生成关键词对...")
         
         for domain in self.domains:
-            self.prepared_keywords[domain] = {}
-            
             print(f"\n为{domain}领域选择关键词...")
             
-            # 英文关键词
-            print(f"- 英文关键词对：")
-            en_keyword_pairs = self._select_diverse_keyword_pairs(domain, "en", num_keyword_pairs)
-            for i, pair in enumerate(en_keyword_pairs):
-                print(f"  {i+1}. {pair[0]} AND {pair[1]}")
-            self.prepared_keywords[domain]["en"] = en_keyword_pairs
+            # 同时获取中英文关键词对
+            keyword_pairs = self._select_bilingual_keyword_pairs(domain, num_keyword_pairs)
             
-            # 中文关键词
-            print(f"- 中文关键词对：")
-            zh_keyword_pairs = self._select_diverse_keyword_pairs(domain, "zh", num_keyword_pairs)
-            for i, pair in enumerate(zh_keyword_pairs):
+            # 存储结果
+            self.prepared_keywords[domain] = keyword_pairs
+            
+            # 打印结果
+            print(f"- 英文关键词对：")
+            for i, pair in enumerate(keyword_pairs["en"]):
                 print(f"  {i+1}. {pair[0]} AND {pair[1]}")
-            self.prepared_keywords[domain]["zh"] = zh_keyword_pairs
+                
+            print(f"- 中文关键词对：")
+            for i, pair in enumerate(keyword_pairs["zh"]):
+                print(f"  {i+1}. {pair[0]} AND {pair[1]}")
         
         print("\n所有关键词对已预生成完毕！")
         return self.prepared_keywords
@@ -120,33 +119,30 @@ class SearchAgent(BaseAgent):
             
             # 获取关键词对（使用预生成的或重新生成）
             if use_prepared_keywords and domain in self.prepared_keywords:
-                en_keyword_pairs = self.prepared_keywords[domain].get("en", [])
-                zh_keyword_pairs = self.prepared_keywords[domain].get("zh", [])
+                keyword_pairs = self.prepared_keywords[domain]
                 print(f"使用预生成的{domain}领域关键词对...")
             else:
-                # 为每个领域的中英文分别选择关键词对
+                # 为每个领域同时选择中英文关键词对
                 print(f"\n为{domain}领域选择关键词...")
+                keyword_pairs = self._select_bilingual_keyword_pairs(domain, num_keyword_pairs)
                 
-                # 英文关键词
+                # 打印结果
                 print(f"- 英文关键词对：")
-                en_keyword_pairs = self._select_diverse_keyword_pairs(domain, "en", num_keyword_pairs)
-                for i, pair in enumerate(en_keyword_pairs):
+                for i, pair in enumerate(keyword_pairs["en"]):
                     print(f"  {i+1}. {pair[0]} AND {pair[1]}")
-                
-                # 中文关键词
+                    
                 print(f"- 中文关键词对：")
-                zh_keyword_pairs = self._select_diverse_keyword_pairs(domain, "zh", num_keyword_pairs)
-                for i, pair in enumerate(zh_keyword_pairs):
+                for i, pair in enumerate(keyword_pairs["zh"]):
                     print(f"  {i+1}. {pair[0]} AND {pair[1]}")
             
             # 收集英文新闻
             print(f"\n收集{domain}英文新闻...")
-            en_articles = self._collect_domain_news(domain, "en", en_keyword_pairs)
+            en_articles = self._collect_domain_news(domain, "en", keyword_pairs["en"])
             print(f"获取到{len(en_articles)}篇英文文章")
             
             # 收集中文新闻
             print(f"收集{domain}中文新闻...")
-            zh_articles = self._collect_domain_news(domain, "zh", zh_keyword_pairs)
+            zh_articles = self._collect_domain_news(domain, "zh", keyword_pairs["zh"])
             print(f"获取到{len(zh_articles)}篇中文文章")
             
             # 分别处理英文和中文文章
@@ -166,20 +162,24 @@ class SearchAgent(BaseAgent):
             
         return results
     
-    def _select_diverse_keyword_pairs(self, domain: str, language: str, num_pairs: int) -> List[List[str]]:
+    def _select_bilingual_keyword_pairs(self, domain: str, num_pairs: int) -> Dict[str, List[List[str]]]:
         """
-        使用LLM从关键词数据中选择多样化的关键词对
+        同时使用LLM为中英文选择多样化的关键词对
         
         Args:
             domain: 领域名称
-            language: 语言代码 ('en' 或 'zh')
-            num_pairs: 要选择的关键词对数量
+            num_pairs: 每种语言要选择的关键词对数量
         
         Returns:
-            List[List[str]]: 选定的关键词对列表
+            Dict[str, List[List[str]]]: 按语言分类的关键词对字典
         """
-        all_keywords = self.keywords_data[domain][language]
-        flat_keywords = [word for pair in all_keywords for word in pair]
+        # 获取英文和中文关键词
+        en_keywords = self.keywords_data[domain]["en"]
+        zh_keywords = self.keywords_data[domain]["zh"]
+        
+        # 将关键词展平为列表
+        en_flat_keywords = [word for pair in en_keywords for word in pair]
+        zh_flat_keywords = [word for pair in zh_keywords for word in pair]
         
         # 为不同领域构建不同的提示词指导
         domain_guidance = ""
@@ -187,39 +187,59 @@ class SearchAgent(BaseAgent):
             domain_guidance = """
             技术领域包含多个不同的子领域，请确保选择的关键词对覆盖不同技术方向，使搜索结果多样化。
             请确保每组关键词对属于不同的子领域，不要选择语义相近的多组。
-            特别注意：中文和英文关键词要选择不同的子领域，以扩大搜索覆盖面。
+            特别注意：中文和英文关键词绝对不能有对应关系，必须选择完全不同的子领域。
+            例如：如果英文选择了"artificial intelligence/machine learning"相关主题，中文就不能选择"人工智能/机器学习"，而应该选择"区块链/云计算"等完全不同的技术领域。
             """
         elif domain == "science":
             domain_guidance = """
             科学领域包含多个不同的学科，请确保选择的关键词对覆盖不同科学领域，使搜索结果多样化。
             请确保每组关键词对属于不同的学科，尽量覆盖多个科学分支。
-            特别注意：中文和英文关键词应该覆盖不同的学科领域，以扩大搜索范围。
+            特别注意：中文和英文关键词必须完全不相关，绝对不能选择相同的学科领域。
+            例如：如果英文选择了"physics/quantum"相关主题，中文就不能选择"物理/量子"，而应该选择"生物学/基因"等完全不同的科学领域。
             """
         else:  # economy
             domain_guidance = """
             经济领域包含多个不同的方面，请确保关键词覆盖不同经济方向，使搜索结果多样化。
             请确保每组关键词对关注经济的不同方面，避免重复或相似的主题。
-            特别注意：中文和英文关键词应该覆盖不同的经济领域，以最大化信息覆盖面。
+            特别注意：中文和英文关键词必须完全不相关，绝对不能有任何对应关系。
+            例如：如果英文选择了"stock market/investment"相关主题，中文就不能选择"股市/投资"，而应该选择"宏观经济/国际贸易"等完全不同的经济领域。
             """
         
         # 准备提示语
         prompt = f"""
-        以下是{domain}领域的{language}关键词列表:
-        {flat_keywords}
+        请为{domain}领域同时选择中英文搜索关键词对。
+
+        以下是{domain}领域的英文关键词列表:
+        {en_flat_keywords}
+        
+        以下是{domain}领域的中文关键词列表:
+        {zh_flat_keywords}
         
         {domain_guidance}
         
-        请从上述列表中选择{num_pairs}组关键词对，每组包含2个关键词。请确保:
+        请从上述列表中分别为英文和中文各选择{num_pairs}组关键词对，每组包含2个关键词。请确保:
         1. 每组内的关键词彼此相关，能够组合形成有效的搜索查询
         2. 不同组之间要覆盖{domain}领域的不同方面，确保多样性
         3. 避免不同组之间的关联性过高，以减少搜索结果的重复
+        4. 【最重要】中文和英文关键词必须选择完全不同的方面，绝对不能出现翻译对应关系
+           - 错误示例：英文选"AI/machine learning"，中文选"人工智能/机器学习"
+           - 正确示例：英文选"AI/machine learning"，中文选"区块链/元宇宙"
+
+        这样做的目的是最大化信息覆盖面，确保不会因语言重复而错过重要信息。
         
         请按以下格式回复:
-        [
-          ["关键词1", "关键词2"],
-          ["关键词3", "关键词4"],
-          ...
-        ]
+        {{
+          "en": [
+            ["英文关键词1", "英文关键词2"],
+            ["英文关键词3", "英文关键词4"],
+            ...
+          ],
+          "zh": [
+            ["中文关键词1", "中文关键词2"],
+            ["中文关键词3", "中文关键词4"],
+            ...
+          ]
+        }}
         """
         
         try:
@@ -227,28 +247,105 @@ class SearchAgent(BaseAgent):
             # 解析LLM回复中的JSON
             response_text = response.strip()
             # 找到JSON部分
-            start_idx = response_text.find('[')
-            end_idx = response_text.rfind(']') + 1
+            start_idx = response_text.find('{')
+            end_idx = response_text.rfind('}') + 1
             
             if start_idx != -1 and end_idx != -1:
                 json_str = response_text[start_idx:end_idx]
-                selected_pairs = json.loads(json_str)
-                # 确保每对都有2个关键词
-                selected_pairs = [pair for pair in selected_pairs if len(pair) == 2]
-                # 如果LLM没有生成足够的对，则补充
-                if len(selected_pairs) < num_pairs:
-                    # 随机选择剩余的关键词对
-                    remaining_count = num_pairs - len(selected_pairs)
-                    remaining_pairs = random.sample(all_keywords, min(remaining_count, len(all_keywords)))
-                    selected_pairs.extend(remaining_pairs)
-                return selected_pairs[:num_pairs]
+                try:
+                    selected_pairs = json.loads(json_str)
+                    
+                    # 验证JSON结构
+                    if not isinstance(selected_pairs, dict) or "en" not in selected_pairs or "zh" not in selected_pairs:
+                        raise ValueError("无效的JSON结构")
+                    
+                    # 确保每对都有2个关键词
+                    en_valid_pairs = [pair for pair in selected_pairs["en"] if len(pair) == 2]
+                    zh_valid_pairs = [pair for pair in selected_pairs["zh"] if len(pair) == 2]
+                    
+                    # 如果LLM没有生成足够的对，则补充
+                    if len(en_valid_pairs) < num_pairs:
+                        remaining_count = num_pairs - len(en_valid_pairs)
+                        remaining_pairs = random.sample(en_keywords, min(remaining_count, len(en_keywords)))
+                        en_valid_pairs.extend(remaining_pairs)
+                    
+                    if len(zh_valid_pairs) < num_pairs:
+                        remaining_count = num_pairs - len(zh_valid_pairs)
+                        remaining_pairs = random.sample(zh_keywords, min(remaining_count, len(zh_keywords)))
+                        zh_valid_pairs.extend(remaining_pairs)
+                    
+                    # 检查是否存在明显的翻译对应关系
+                    self._check_keyword_uniqueness(en_valid_pairs, zh_valid_pairs)
+                    
+                    return {
+                        "en": en_valid_pairs[:num_pairs],
+                        "zh": zh_valid_pairs[:num_pairs]
+                    }
+                except json.JSONDecodeError:
+                    # JSON解析失败
+                    print(f"JSON解析失败，将使用随机选择")
+                    return self._fallback_keyword_selection(en_keywords, zh_keywords, num_pairs)
             else:
-                # 解析失败时随机选择
-                return random.sample(all_keywords, min(num_pairs, len(all_keywords)))
+                # 找不到JSON
+                print(f"无法识别JSON结构，将使用随机选择")
+                return self._fallback_keyword_selection(en_keywords, zh_keywords, num_pairs)
         except Exception as e:
             print(f"LLM关键词选择出错: {e}")
             # 出错时随机选择
-            return random.sample(all_keywords, min(num_pairs, len(all_keywords)))
+            return self._fallback_keyword_selection(en_keywords, zh_keywords, num_pairs)
+    
+    def _check_keyword_uniqueness(self, en_pairs, zh_pairs):
+        """
+        检查中英文关键词对是否有明显的对应关系，并打印警告
+        
+        Args:
+            en_pairs: 英文关键词对列表
+            zh_pairs: 中文关键词对列表
+        """
+        # 常见的中英文对应关系
+        common_translations = {
+            "ai": "人工智能",
+            "artificial intelligence": "人工智能",
+            "machine learning": "机器学习",
+            "deep learning": "深度学习",
+            "big data": "大数据",
+            "cloud computing": "云计算",
+            "blockchain": "区块链",
+            "quantum": "量子",
+            "robotics": "机器人",
+            "autonomous": "自动驾驶",
+            "5g": "5g",
+            "iot": "物联网",
+            "internet of things": "物联网",
+            "vr": "虚拟现实",
+            "ar": "增强现实",
+            "metaverse": "元宇宙"
+        }
+        
+        # 扁平化关键词列表以便于比较
+        en_flat = [word.lower() for pair in en_pairs for word in pair]
+        zh_flat = [word for pair in zh_pairs for word in pair]
+        
+        # 检查是否存在对应关系
+        potential_matches = []
+        for en_word in en_flat:
+            for zh_word in zh_flat:
+                if en_word in common_translations and common_translations[en_word] == zh_word:
+                    potential_matches.append((en_word, zh_word))
+        
+        # 如果存在明显对应，打印警告
+        if potential_matches:
+            print("\n警告：检测到中英文关键词存在以下对应关系，可能会导致搜索结果重复:")
+            for en, zh in potential_matches:
+                print(f"  - '{en}' 对应 '{zh}'")
+            print("建议在搜索前手动调整关键词以获得更多样化的结果。\n")
+    
+    def _fallback_keyword_selection(self, en_keywords, zh_keywords, num_pairs):
+        """当LLM选择失败时，使用随机选择作为后备方案"""
+        return {
+            "en": random.sample(en_keywords, min(num_pairs, len(en_keywords))),
+            "zh": random.sample(zh_keywords, min(num_pairs, len(zh_keywords)))
+        }
     
     def _process_language_articles(self, articles: List[Dict], domain: str, language: str, max_articles: int) -> List[Dict]:
         """
@@ -490,25 +587,3 @@ class SearchAgent(BaseAgent):
         ascii_count = sum(1 for c in text if ord(c) < 128)
         return ascii_count / len(text) > 0.7  # 如果超过70%是ASCII字符，认为是英文
 
-
-if __name__ == "__main__":
-    # 示例使用
-    agent = SearchAgent()
-    
-    # 预先生成所有领域的关键词对
-    print("===== 预生成所有领域的关键词对 =====")
-    agent.prepare_all_keywords(num_keyword_pairs=4)
-    
-    # 使用预生成的关键词对收集新闻
-    print("\n===== 使用预生成的关键词对收集新闻 =====")
-    results = agent.collect_news(use_prepared_keywords=True)
-    
-    # 打印结果
-    for domain, articles in results.items():
-        print(f"\n===== {domain.upper()} 新闻 ({len(articles)}篇) =====")
-        for i, article in enumerate(articles):
-            print(f"{i+1}. {article['title']} ({article['language']})")
-            print(f"   关键词: {', '.join(article['keywords'])}")
-            print(f"   来源: {article['source']}, 发布日期: {article['publishedAt']}")
-            print(f"   URL: {article['url']}")
-            print() 
