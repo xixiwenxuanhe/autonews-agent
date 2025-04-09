@@ -59,15 +59,15 @@ class SearchAgent(BaseAgent):
             },
             "science": {
                 "en": [
-                    ["physics", "quantum mechanics"],
                     ["biology", "genetics"],
                     ["chemistry", "molecular structure"],
+                    ["biochemistry", "enzymes"],
                     ["astronomy", "astrophysics"]
                 ],
                 "zh": [
-                    ["物理学", "量子力学"],
                     ["生物学", "基因研究"],
                     ["化学", "分子结构"],
+                    ["生物化学", "蛋白质研究"],
                     ["天文学", "宇宙探索"]
                 ]
             },
@@ -97,9 +97,10 @@ class SearchAgent(BaseAgent):
             """,
             "science": """
                 你是一位科学新闻筛选专家。请选择最重要和最具影响力的科学研究文章。
-                优先考虑材料科学、生物学、化学、物理学、天文学、地球科学和环境科学方面的重大科学发现和突破。
-                特别注意：请勿选择人工智能、计算机技术及相关内容此类文章。
-                请确保所选文章涵盖对人类知识有重大贡献的基础研究领域的重要发现。
+                优先考虑生物学、化学、生物化学、天文学、地球科学和环境科学方面的重大科学发现和突破。
+                特别注意：请勿选择物理学、量子物理、人工智能、计算机技术及相关内容的文章。
+                经验表明，物理学相关文章容易包含AI和计算机技术内容，应予以排除。
+                请确保所选文章涵盖对人类知识有重大贡献的基础研究领域的重要发现，特别是生物学和化学领域。
             """,
             "economy": """
                 你是一位经济新闻筛选专家。请选择最重要和最具影响力的经济新闻文章。
@@ -173,45 +174,26 @@ class SearchAgent(BaseAgent):
             # 获取关键词对（使用预生成的或重新生成）
             if use_prepared_keywords and domain in self.prepared_keywords:
                 keyword_pairs = self.prepared_keywords[domain]
-                print(f"使用预生成的{domain}领域关键词对...")
             elif hard:
                 # 使用硬编码的关键词对
                 keyword_pairs = self.hard_coded_keywords[domain]
-                print(f"使用硬编码的{domain}领域关键词对...")
             else:
                 # 为每个领域同时选择中英文关键词对
-                print(f"\n为{domain}领域选择关键词...")
                 keyword_pairs = self._select_bilingual_keyword_pairs(domain, num_keyword_pairs)
-                
-                # 打印结果
-                print(f"- 英文关键词对：")
-                for i, pair in enumerate(keyword_pairs["en"]):
-                    print(f"  {i+1}. {pair[0]} AND {pair[1]}")
-                    
-                print(f"- 中文关键词对：")
-                for i, pair in enumerate(keyword_pairs["zh"]):
-                    print(f"  {i+1}. {pair[0]} AND {pair[1]}")
             
             # 收集英文新闻
-            print(f"\n收集{domain}英文新闻...")
             en_articles = self._collect_domain_news(domain, "en", keyword_pairs["en"])
-            print(f"获取到{len(en_articles)}篇英文文章")
             
             # 收集中文新闻
-            print(f"收集{domain}中文新闻...")
             zh_articles = self._collect_domain_news(domain, "zh", keyword_pairs["zh"])
-            print(f"获取到{len(zh_articles)}篇中文文章")
             
             # 分别处理英文和中文文章
-            print(f"处理{domain}英文文章...")
             filtered_en_articles = self._process_language_articles(en_articles, domain, "en", max_articles_per_language)
-            
-            print(f"处理{domain}中文文章...")
             filtered_zh_articles = self._process_language_articles(zh_articles, domain, "zh", max_articles_per_language)
             
-            # 合并结果
+            # 合并结果并打印简要信息
             domain_articles = filtered_en_articles + filtered_zh_articles
-            print(f"最终获取到{len(domain_articles)}篇{domain}文章（英文{len(filtered_en_articles)}篇，中文{len(filtered_zh_articles)}篇）\n")
+            print(f"{domain}领域搜索结果：共{len(domain_articles)}篇文章（英文{len(filtered_en_articles)}篇，中文{len(filtered_zh_articles)}篇）")
             
             # 保存结果
             results[domain] = domain_articles
@@ -339,11 +321,11 @@ class SearchAgent(BaseAgent):
         Returns:
             List[Dict]: 处理后的文章列表
         """
-        print(f"收集到{len(articles)}篇{language}文章")
+        # 简化输出，只显示一行汇总信息
+        article_count = len(articles)
         
         # 首先去重
         unique_articles = self._remove_duplicates(articles)
-        print(f"去重后剩余{len(unique_articles)}篇{language}文章")
         
         # 如果文章数量不足，直接返回
         if len(unique_articles) <= max_articles:
@@ -355,7 +337,6 @@ class SearchAgent(BaseAgent):
         
         # 格式化
         formatted_articles = self._format_articles(filtered_articles)
-        print(f"筛选后保留{len(formatted_articles)}篇{language}文章")
         
         return formatted_articles
     
@@ -422,6 +403,15 @@ class SearchAgent(BaseAgent):
             # 构造查询字符串（两个关键词之间用AND连接）
             query = " AND ".join(keyword_pair)
             
+            # 科学领域添加简单的负面关键词（排除词）
+            if domain == "science":
+                # 通用排除词 - 简化为最常见的几个
+                exclude_words = ["AI", "artificial intelligence", "physics", "quantum", "物理", "人工智能"]
+                
+                # 添加NOT运算符
+                for word in exclude_words:
+                    query += f" NOT {word}"
+            
             # 构造API请求
             params = {
                 'apiKey': self.api_key,
@@ -439,42 +429,10 @@ class SearchAgent(BaseAgent):
             if data.get('status') == 'ok':
                 articles = data.get('articles', [])
                 
-                # 打印获取到的文章标题，用于观察
-                print(f"\n关键词对 '{query}' 获取到 {len(articles)} 篇文章:")
-                
-                # 如果是科学领域，需要过滤掉AI相关的文章
-                if domain == "science":
-                    filtered_articles = []
-                    ai_keywords = ["AI", "人工智能", "artificial intelligence", "machine learning", 
-                                  "机器学习", "深度学习", "deep learning", "大模型", "large model", 
-                                  "LLM", "GPT", "大语言模型", "ChatGPT", "Llama", "DeepMind"]
-                    
-                    for article in articles:
-                        title = article.get('title', 'No title')
-                        description = article.get('description', '')
-                        content = article.get('content', '')
-                        
-                        # 检查标题、描述和内容中是否包含AI关键词
-                        contains_ai = False
-                        for kw in ai_keywords:
-                            if (kw.lower() in title.lower() or 
-                                kw.lower() in description.lower() or 
-                                kw.lower() in content.lower()):
-                                contains_ai = True
-                                break
-                                
-                        if not contains_ai:
-                            filtered_articles.append(article)
-                            print(f"  {len(filtered_articles)}. {title}  ✅")
-                        else:
-                            print(f"  [已过滤] {title}  ❌ (包含AI相关内容)")
-                    
-                    articles = filtered_articles
-                else:
-                    # 非科学领域，正常打印文章
-                    for i, article in enumerate(articles):
-                        title = article.get('title', 'No title')
-                        print(f"  {i+1}. {title}")
+                # 简单打印获取到的文章
+                for i, article in enumerate(articles):
+                    title = article.get('title', 'No title')
+                    print(f"  {i+1}. {title}")
                 
                 # 为每篇文章添加领域和关键词信息
                 for article in articles:
