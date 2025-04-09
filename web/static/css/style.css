@@ -1,0 +1,128 @@
+/* 基本样式 */
+body {
+    background-color: #f8f9fa;
+}
+
+/* 邮箱输入框样式 */
+#emailContainer .input-group {
+    transition: all 0.3s ease;
+    margin-bottom: 10px !important;
+}
+
+#emailContainer .input-group-text {
+    width: 40px;
+    justify-content: center;
+    background-color: #5e81ac;
+    color: white;
+    font-weight: bold;
+    border-color: #5e81ac;
+}
+
+#emailContainer .remove-email {
+    width: 42px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    padding: 0.375rem 0.5rem;
+    transition: all 0.2s ease;
+}
+
+#emailContainer .remove-email:hover {
+    background-color: #bf616a;
+    color: white;
+    border-color: #bf616a;
+}
+
+/* 终端区域样式 */
+.terminal {
+    background-color: #2e3440;
+    color: #d8dee9;
+    font-family: 'Courier New', monospace;
+    padding: 15px;
+    border-radius: 5px;
+    height: 500px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* 定义滚动条样式 */
+.terminal::-webkit-scrollbar {
+    width: 8px;
+}
+
+.terminal::-webkit-scrollbar-track {
+    background: #3b4252;
+}
+
+.terminal::-webkit-scrollbar-thumb {
+    background-color: #4c566a;
+    border-radius: 10px;
+}
+
+/* 输出样式 */
+.output {
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* 输出中的特殊文本标记 */
+.output .success {
+    color: #a3be8c;
+}
+
+.output .error {
+    color: #bf616a;
+}
+
+.output .warning {
+    color: #ebcb8b;
+}
+
+.output .info {
+    color: #88c0d0;
+}
+
+/* 添加邮箱输入框的动画效果 */
+.d-none {
+    display: none !important;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+#emailContainer .input-group:not(.d-none) {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* 按钮样式 */
+#addEmailBtn {
+    transition: all 0.2s ease;
+}
+
+#addEmailBtn:hover {
+    background-color: #5e81ac;
+    color: white;
+}
+
+/* 按钮图标与文本间距 */
+.btn i {
+    margin-right: 5px;
+}
+
+/* 加载中状态 */
+.running {
+    color: #8fbcbb !important;
+    font-weight: bold;
+}
+
+.completed {
+    color: #a3be8c !important;
+    font-weight: bold;
+}
+
+.idle {
+    color: #5e81ac !important;
+    font-weight: normal;
+} 
