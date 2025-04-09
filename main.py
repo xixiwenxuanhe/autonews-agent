@@ -41,11 +41,12 @@ def print_debug_info(message, is_start=True, is_result=False, result=None):
     else:
         print(f"[{current_time}] ℹ️ {message}")
 
-def run_news_aggregation(hard=False):
+def run_news_aggregation(hard=False, sent=True):
     """运行新闻聚合流程
     
     Args:
         hard (bool): 是否使用硬编码的关键词对并打印搜索结果
+        sent (bool): 是否发送邮件
     """
     start_time = datetime.now()
     print_debug_info(f"新闻聚合流程 - {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
@@ -76,10 +77,13 @@ def run_news_aggregation(hard=False):
     )
     print_debug_info("整合新闻内容", is_start=False, is_result=True)
     
-    # 发送邮件
-    print_debug_info("发送邮件", is_start=True)
-    email_agent.send_email(email_content)
-    print_debug_info("发送邮件", is_start=False, is_result=True)
+    # 只有在sent为True时才发送邮件
+    if sent:
+        print_debug_info("发送邮件", is_start=True)
+        email_agent.send_email(email_content)
+        print_debug_info("发送邮件", is_start=False, is_result=True)
+    else:
+        print_debug_info("邮件发送已禁用 (sent=False)，跳过发送步骤", is_start=False)
     
     # 计算总耗时
     end_time = datetime.now()
@@ -90,21 +94,24 @@ def main():
     # 解析命令行参数
     parser = argparse.ArgumentParser(description="新闻聚合系统")
     parser.add_argument("--hard", type=str, default="false", help="是否使用硬编码的关键词对并打印搜索结果")
+    parser.add_argument("--sent", type=str, default="true", help="是否发送邮件")
     args = parser.parse_args()
     
-    # 转换hard参数为布尔值
+    # 转换参数为布尔值
     use_hard = args.hard.lower() == "true"
+    do_send = args.sent.lower() == "true"
     
     # 获取定时配置
     schedule_time = os.getenv("SCHEDULE_TIME", "07:00")
     
     # 设置定时任务
-    schedule.every().day.at(schedule_time).do(run_news_aggregation, hard=use_hard)
+    schedule.every().day.at(schedule_time).do(run_news_aggregation, hard=use_hard, sent=do_send)
     
     print(f"新闻聚合系统已启动，将在每天 {schedule_time} 运行")
+    print(f"参数设置: 硬编码关键词={use_hard}, 发送邮件={do_send}")
     
     # 立即运行一次
-    run_news_aggregation(hard=use_hard)
+    run_news_aggregation(hard=use_hard, sent=do_send)
     
     # 持续运行定时任务
     while True:
