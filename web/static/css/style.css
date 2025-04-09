@@ -1,6 +1,6 @@
 /* 基本样式 */
 body {
-    background-color: #f8f9fa;
+    background-color: #fff5f7;
     min-height: 100vh;
     display: flex;
     align-items: flex-end;
@@ -8,13 +8,67 @@ body {
 }
 
 .container {
-    width: 100%;
+    width: 98%;
+    max-width: 1600px;
+}
+
+/* 标题区域样式 */
+.title-area {
+    background: linear-gradient(135deg, #ffffff 0%, #fff0f3 50%, #f0f9ff 100%);
+    border-radius: 24px;
+    padding: 3.5rem 2rem;
+    margin-bottom: 2.5rem;
+    box-shadow: 0 15px 35px rgba(255, 182, 193, 0.15);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255, 182, 193, 0.2);
+}
+
+.title-area::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #ff9a9e 0%, #fad0c4 50%, #a1c4fd 100%);
+    opacity: 0.8;
+}
+
+.title-area h1 {
+    margin-bottom: 1.2rem;
+    font-size: 2.8rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    background: linear-gradient(120deg, #4a90e2, #ff9a9e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 2px 15px rgba(255, 182, 193, 0.1);
+}
+
+.title-area p {
+    color: #6c7a89;
+    font-size: 1.15rem;
+    max-width: 800px;
+    margin: 0 auto;
+    line-height: 1.6;
+    font-weight: 400;
 }
 
 .card {
-    border-radius: 15px;
+    border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 20px rgba(255, 182, 193, 0.1);
+    background-color: #fff;
+    border: none;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(255, 182, 193, 0.15);
 }
 
 /* 系统设置卡片样式 */
@@ -23,12 +77,18 @@ body {
     display: flex;
     flex-direction: column;
     margin-bottom: 0;
+    background-color: #fff;
 }
 
 .settings-card .card-body {
     flex: 1;
     display: flex;
     flex-direction: column;
+}
+
+.settings-card .card-header {
+    background: linear-gradient(135deg, #a1c4fd 0%, #ff9a9e 100%);
+    color: #fff;
 }
 
 #emailContainer {
@@ -47,8 +107,11 @@ body {
 }
 
 .card-header {
-    border-top-left-radius: 15px !important;
-    border-top-right-radius: 15px !important;
+    border-top-left-radius: 20px !important;
+    border-top-right-radius: 20px !important;
+    background-color: #2c3e50;
+    color: #fff;
+    border: none;
 }
 
 /* 邮箱输入框样式 */
@@ -60,10 +123,10 @@ body {
 #emailContainer .input-group-text {
     width: 40px;
     justify-content: center;
-    background-color: #5e81ac;
+    background-color: #27ae60;
     color: white;
     font-weight: bold;
-    border-color: #5e81ac;
+    border-color: #27ae60;
 }
 
 #emailContainer .remove-email {
@@ -75,36 +138,45 @@ body {
 }
 
 #emailContainer .remove-email:hover {
-    background-color: #bf616a;
+    background-color: #e74c3c;
     color: white;
-    border-color: #bf616a;
+    border-color: #e74c3c;
 }
 
 /* 终端区域样式 */
 .terminal {
-    background-color: #2e3440;
-    color: #d8dee9;
-    font-family: 'Courier New', monospace;
-    padding: 15px;
+    background-color: #282c34;
+    color: #abb2bf;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+    padding: 20px;
     border-radius: 12px;
     height: 626px;
-    overflow: hidden;
+    width: 100%;
+    overflow-x: auto;
     white-space: pre-wrap;
     word-wrap: break-word;
+    font-size: 14px;
+    line-height: 1.6;
 }
 
 /* 定义滚动条样式 */
 .terminal::-webkit-scrollbar {
-    width: 8px;
+    width: 10px;
+    height: 10px;
 }
 
 .terminal::-webkit-scrollbar-track {
-    background: #3b4252;
+    background: #21252b;
 }
 
 .terminal::-webkit-scrollbar-thumb {
-    background-color: #4c566a;
+    background-color: #4d5566;
     border-radius: 10px;
+    border: 2px solid #282c34;
+}
+
+.terminal::-webkit-scrollbar-thumb:hover {
+    background-color: #5c6370;
 }
 
 /* 输出样式 */
@@ -115,19 +187,19 @@ body {
 
 /* 输出中的特殊文本标记 */
 .output .success {
-    color: #a3be8c;
+    color: #98c379;
 }
 
 .output .error {
-    color: #bf616a;
+    color: #e06c75;
 }
 
 .output .warning {
-    color: #ebcb8b;
+    color: #e5c07b;
 }
 
 .output .info {
-    color: #88c0d0;
+    color: #61afef;
 }
 
 /* 添加邮箱输入框的动画效果 */
@@ -148,11 +220,18 @@ body {
 .btn {
     border-radius: 10px;
     transition: all 0.2s ease;
+    padding: 8px 16px;
 }
 
 #addEmailBtn {
-    border-radius: 10px;
-    transition: all 0.2s ease;
+    background-color: #27ae60;
+    color: white;
+    border: none;
+}
+
+#addEmailBtn:hover {
+    background-color: #219a52;
+    transform: translateY(-1px);
 }
 
 /* 按钮图标与文本间距 */
@@ -162,16 +241,16 @@ body {
 
 /* 加载中状态 */
 .running {
-    color: #8fbcbb !important;
+    color: #61afef !important;
     font-weight: bold;
 }
 
 .completed {
-    color: #a3be8c !important;
+    color: #98c379 !important;
     font-weight: bold;
 }
 
 .idle {
-    color: #5e81ac !important;
+    color: #4a90e2 !important;
     font-weight: normal;
 } 
