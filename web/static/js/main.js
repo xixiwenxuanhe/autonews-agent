@@ -1,5 +1,13 @@
-// 初始化Socket.IO连接
-const socket = io();
+// 获取API路径前缀
+const getApiUrl = (path) => {
+    // 使用应用前缀环境变量或从页面获取
+    const basePrefix = window.APPLICATION_ROOT || '';
+    // 确保path以/开头
+    if (!path.startsWith('/')) {
+        path = '/' + path;
+    }
+    return `${basePrefix}${path}`;
+};
 
 // DOM元素
 const settingsForm = document.getElementById('settingsForm');
@@ -20,9 +28,13 @@ const MAX_EMAILS = 3;
 // 系统状态
 let isRunning = false;
 let taskProgress = 0;
+let lastOutputLength = 0; // 记录上次输出数量
 
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
+    // 重置输出计数器
+    lastOutputLength = 0;
+    
     // 绑定添加邮箱按钮事件
     addEmailBtn.addEventListener('click', addEmailField);
     
@@ -39,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     checkStatus();
     
     // 定期查询状态
-    setInterval(checkStatus, 5000);
+    setInterval(checkStatus, 2000); // 更新频率为2秒一次
 });
 
 // 添加邮箱输入框
@@ -158,12 +170,15 @@ function handleFormSubmit(e) {
     // 清空输出
     clearOutput();
     
+    // 重置输出计数器
+    lastOutputLength = 0;
+    
     // 添加启动信息
     addOutput('[系统] 正在启动任务...');
     addOutput(`[系统] 参数：硬编码模式=${params.hard}, 发送邮件=${params.send}, 收件人=${emails.join(', ') || '使用.env配置'}`);
     
     // 发送请求
-    fetch('/api/run', {
+    fetch(getApiUrl('/api/run'), {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -211,9 +226,10 @@ function updateProgress(value) {
 
 // 检查任务状态
 function checkStatus() {
-    fetch('/api/status')
+    fetch(getApiUrl('/api/status'))
         .then(response => response.json())
         .then(data => {
+            // 处理状态
             if (data.status === 'running') {
                 setRunningState(true);
                 // 模拟进度
@@ -228,9 +244,37 @@ function checkStatus() {
             } else {
                 setRunningState(false);
             }
+            
+            // 处理输出
+            if (data.output && data.output.length > 0) {
+                // 重置输出区域，如果是首次加载
+                if (lastOutputLength === 0 && data.output.length > 0) {
+                    outputEl.innerHTML = '';
+                }
+                
+                // 直接添加所有新输出 (不基于长度比较)
+                if (data.output.length > lastOutputLength) {
+                    // 只添加新的输出行
+                    for (let i = lastOutputLength; i < data.output.length; i++) {
+                        addOutput(data.output[i]);
+                    }
+                    
+                    // 更新最后处理的输出长度
+                    lastOutputLength = data.output.length;
+                }
+                
+                // 检查是否包含完成标记
+                const lastFewOutputs = data.output.slice(-3).join(' '); // 获取最后几条输出
+                if (lastFewOutputs.includes('新闻聚合流程完成') || lastFewOutputs.includes('处理完成: 发送邮件')) {
+                    setRunningState(false);
+                    statusDisplay.textContent = '完成';
+                    statusDisplay.className = 'completed';
+                    updateProgress(100);
+                }
+            }
         })
-        .catch(() => {
-            // 忽略错误
+        .catch((error) => {
+            console.error('获取状态出错:', error);
         });
 }
 
@@ -259,19 +303,7 @@ function addOutput(text, type = '') {
 // 清空输出
 function clearOutput() {
     outputEl.innerHTML = '';
+    lastOutputLength = 0; // 重置输出计数器
     addOutput('[系统] 输出已清空');
 }
-
-// Socket.IO消息处理
-socket.on('output', function(data) {
-    addOutput(data.data);
-    
-    // 如果包含完成标记，设置状态为完成
-    if (data.data.includes('新闻聚合流程完成') || data.data.includes('处理完成: 发送邮件')) {
-        setRunningState(false);
-        statusDisplay.textContent = '完成';
-        statusDisplay.className = 'completed';
-        updateProgress(100);
-    }
-});
     
