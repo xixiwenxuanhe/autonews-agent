@@ -41,6 +41,10 @@ class SearchAgent(BaseAgent):
         # 存储预先生成的关键词对
         self.prepared_keywords = {}
         
+        # 添加用于全局去重的集合
+        self.all_seen_urls = set()  # 存储所有已见过的URL
+        self.all_seen_titles = set()  # 存储所有已见过的标题+来源组合
+        
         # 硬编码的关键词对
         self.hard_coded_keywords = {
             "technology": {
@@ -143,10 +147,18 @@ class SearchAgent(BaseAgent):
         """
         results = defaultdict(list)
         
+        # 重置全局去重集合
+        self.all_seen_urls = set()
+        self.all_seen_titles = set()
+        
         # 如果需要使用预生成的关键词对但还没有生成，则先生成
         if use_prepared_keywords and not self.prepared_keywords:
             self.prepare_all_keywords(num_keyword_pairs, hard)
         
+        # 存储所有收集到的文章（未处理）
+        all_collected_articles = {}
+        
+        # 第一步：为每个领域收集文章
         for domain in self.domains:
             print(f"正在收集{domain}领域的新闻...")
             
@@ -166,9 +178,28 @@ class SearchAgent(BaseAgent):
             # 收集中文新闻
             zh_articles = self._collect_domain_news(domain, "zh", keyword_pairs["zh"])
             
-            # 分别处理英文和中文文章
-            filtered_en_articles = self._process_language_articles(en_articles, domain, "en", max_articles_per_language)
-            filtered_zh_articles = self._process_language_articles(zh_articles, domain, "zh", max_articles_per_language)
+            # 存储未处理的文章
+            all_collected_articles[domain] = {
+                "en": en_articles,
+                "zh": zh_articles
+            }
+        
+        # 第二步：处理各领域文章（全局去重后）
+        for domain in self.domains:
+            # 分别处理英文和中文文章，使用全局去重
+            filtered_en_articles = self._process_language_articles(
+                all_collected_articles[domain]["en"], 
+                domain, 
+                "en", 
+                max_articles_per_language
+            )
+            
+            filtered_zh_articles = self._process_language_articles(
+                all_collected_articles[domain]["zh"], 
+                domain, 
+                "zh", 
+                max_articles_per_language
+            )
             
             # 合并结果并打印简要信息
             domain_articles = filtered_en_articles + filtered_zh_articles
@@ -314,7 +345,7 @@ class SearchAgent(BaseAgent):
     
     def _remove_duplicates(self, articles: List[Dict]) -> List[Dict]:
         """
-        移除重复的文章
+        移除重复的文章，使用全局去重逻辑
         
         Args:
             articles: 文章列表
@@ -325,26 +356,24 @@ class SearchAgent(BaseAgent):
         if not articles:
             return []
             
-        # 使用URL作为唯一标识
-        seen_urls = set()
         unique_articles = []
         
         for article in articles:
             url = article.get('url', '')
+            title = article.get('title', '')
+            source = article.get('source', {}).get('name', '')
             
-            # 只保留URL未见过的文章
-            if url and url not in seen_urls:
-                seen_urls.add(url)
+            # 使用URL作为主要唯一标识
+            if url and url not in self.all_seen_urls:
+                self.all_seen_urls.add(url)
                 unique_articles.append(article)
             
             # 如果URL为空，使用标题+来源作为备用标识
             elif not url:
-                title = article.get('title', '')
-                source = article.get('source', {}).get('name', '')
                 key = f"{title}_{source}"
                 
-                if key and key not in seen_urls:
-                    seen_urls.add(key)
+                if key and key not in self.all_seen_titles:
+                    self.all_seen_titles.add(key)
                     unique_articles.append(article)
                 
         return unique_articles
