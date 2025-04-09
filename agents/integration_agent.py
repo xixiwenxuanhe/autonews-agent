@@ -29,13 +29,12 @@ class ContentIntegrationAgent(BaseAgent):
         """
         return []
     
-    def integrate_content(self, tech_news=None, economy_news=None, biology_news=None):
+    def integrate_content(self, tech_news=None, economy_news=None):
         """整合各类新闻内容并生成邮件内容
         
         Args:
             tech_news: IT科技新闻列表
             economy_news: 经济新闻列表
-            biology_news: 仅为向后兼容保留，不再使用
             
         Returns:
             str: 整合后的邮件内容
@@ -91,6 +90,7 @@ class ContentIntegrationAgent(BaseAgent):
             background-color: #f7f7f7;
             -webkit-text-size-adjust: 100%;
             -ms-text-size-adjust: 100%;
+            font-size: 16px;  /* 基础字体大小增加 */
         }}
         table {{
             border-spacing: 0;
@@ -235,7 +235,7 @@ class ContentIntegrationAgent(BaseAgent):
                             <table border="0" cellpadding="0" cellspacing="0" width="100%" class="section" style="margin-bottom: 25px;">
                                 <tr>
                                     <td>
-                                        <h2 class="section-title" style="font-size: 20px; font-weight: bold; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 1px solid #eeeeee;">📱 IT科技新闻</h2>
+                                        <h2 class="section-title" style="font-size: 22px; font-weight: bold; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 1px solid #eeeeee;">📱 IT科技新闻</h2>
                                     </td>
                                 </tr>
 """
@@ -244,7 +244,7 @@ class ContentIntegrationAgent(BaseAgent):
                 html_content += f"""
                                 <tr>
                                     <td style="padding-bottom: 5px;">
-                                        <h3 class="language-title" style="font-size: 17px; font-weight: bold; margin: 10px 0 10px 5px;">🇨🇳 早安中国</h3>
+                                        <h3 class="language-title" style="font-size: 19px; font-weight: bold; margin: 10px 0 10px 5px;">🇨🇳 早安中国</h3>
                                     </td>
                                 </tr>
 """
@@ -255,22 +255,22 @@ class ContentIntegrationAgent(BaseAgent):
                                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                             <tr>
                                                 <td>
-                                                    <p class="news-title" style="font-size: 17px; font-weight: bold; margin-bottom: 5px;">{news.get('title', '无标题')}</p>
+                                                    <p class="news-title" style="font-size: 19px; font-weight: bold; margin-bottom: 5px;">{news.get('title', '无标题')}</p>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <td>
-                                                    <span class="news-source" style="font-size: 12px;">来源: {news.get('source', '未知来源')}</span>
+                                                    <span class="news-source" style="font-size: 13px;">来源: {news.get('source', '未知来源')}</span>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <td style="padding-top: 5px;">
-                                                    <p class="news-description" style="font-size: 15px;">{news.get('description', '无描述')}</p>
+                                                    <p class="news-description" style="font-size: 17px;">{news.get('description', '无描述')}</p>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <td style="padding-top: 8px;">
-                                                    <a href="{news.get('url', '#')}" class="news-link" style="display: inline-block; color: #0066cc; font-size: 14px;" target="_blank">阅读更多 →</a>
+                                                    <a href="{news.get('url', '#')}" class="news-link" style="display: inline-block; color: #0066cc; font-size: 15px;" target="_blank">阅读更多 →</a>
                                                 </td>
                                             </tr>
                                         </table>
@@ -283,7 +283,7 @@ class ContentIntegrationAgent(BaseAgent):
                 html_content += f"""
                                 <tr>
                                     <td style="padding-bottom: 5px;">
-                                        <h3 class="language-title" style="font-size: 17px; font-weight: bold; margin: 10px 0 10px 5px;">🌍 Hello World</h3>
+                                        <h3 class="language-title" style="font-size: 19px; font-weight: bold; margin: 10px 0 10px 5px;">🌍 Hello World</h3>
                                     </td>
                                 </tr>
 """
@@ -294,22 +294,22 @@ class ContentIntegrationAgent(BaseAgent):
                                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                             <tr>
                                                 <td>
-                                                    <p class="news-title" style="font-size: 17px; font-weight: bold; margin-bottom: 5px;">{news.get('title', '无标题')}</p>
+                                                    <p class="news-title" style="font-size: 19px; font-weight: bold; margin-bottom: 5px;">{news.get('title', '无标题')}</p>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <td>
-                                                    <span class="news-source" style="font-size: 12px;">来源: {news.get('source', '未知来源')}</span>
+                                                    <span class="news-source" style="font-size: 13px;">来源: {news.get('source', '未知来源')}</span>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <td style="padding-top: 5px;">
-                                                    <p class="news-description" style="font-size: 15px;">{news.get('description', '无描述')}</p>
+                                                    <p class="news-description" style="font-size: 17px;">{news.get('description', '无描述')}</p>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <td style="padding-top: 8px;">
-                                                    <a href="{news.get('url', '#')}" class="news-link" style="display: inline-block; color: #0066cc; font-size: 14px;" target="_blank">阅读更多 →</a>
+                                                    <a href="{news.get('url', '#')}" class="news-link" style="display: inline-block; color: #0066cc; font-size: 15px;" target="_blank">阅读更多 →</a>
                                                 </td>
                                             </tr>
                                         </table>
@@ -331,7 +331,7 @@ class ContentIntegrationAgent(BaseAgent):
                             <table border="0" cellpadding="0" cellspacing="0" width="100%" class="section" style="margin-bottom: 25px;">
                                 <tr>
                                     <td>
-                                        <h2 class="section-title" style="font-size: 20px; font-weight: bold; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 1px solid #eeeeee;">💰 经济新闻</h2>
+                                        <h2 class="section-title" style="font-size: 22px; font-weight: bold; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 1px solid #eeeeee;">💰 经济新闻</h2>
                                     </td>
                                 </tr>
 """
@@ -340,7 +340,7 @@ class ContentIntegrationAgent(BaseAgent):
                 html_content += f"""
                                 <tr>
                                     <td style="padding-bottom: 5px;">
-                                        <h3 class="language-title" style="font-size: 17px; font-weight: bold; margin: 10px 0 10px 5px;">🇨🇳 早安中国</h3>
+                                        <h3 class="language-title" style="font-size: 19px; font-weight: bold; margin: 10px 0 10px 5px;">🇨🇳 早安中国</h3>
                                     </td>
                                 </tr>
 """
@@ -351,22 +351,22 @@ class ContentIntegrationAgent(BaseAgent):
                                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                             <tr>
                                                 <td>
-                                                    <p class="news-title" style="font-size: 17px; font-weight: bold; margin-bottom: 5px;">{news.get('title', '无标题')}</p>
+                                                    <p class="news-title" style="font-size: 19px; font-weight: bold; margin-bottom: 5px;">{news.get('title', '无标题')}</p>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <td>
-                                                    <span class="news-source" style="font-size: 12px;">来源: {news.get('source', '未知来源')}</span>
+                                                    <span class="news-source" style="font-size: 13px;">来源: {news.get('source', '未知来源')}</span>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <td style="padding-top: 5px;">
-                                                    <p class="news-description" style="font-size: 15px;">{news.get('description', '无描述')}</p>
+                                                    <p class="news-description" style="font-size: 17px;">{news.get('description', '无描述')}</p>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <td style="padding-top: 8px;">
-                                                    <a href="{news.get('url', '#')}" class="news-link" style="display: inline-block; color: #0066cc; font-size: 14px;" target="_blank">阅读更多 →</a>
+                                                    <a href="{news.get('url', '#')}" class="news-link" style="display: inline-block; color: #0066cc; font-size: 15px;" target="_blank">阅读更多 →</a>
                                                 </td>
                                             </tr>
                                         </table>
@@ -379,7 +379,7 @@ class ContentIntegrationAgent(BaseAgent):
                 html_content += f"""
                                 <tr>
                                     <td style="padding-bottom: 5px;">
-                                        <h3 class="language-title" style="font-size: 17px; font-weight: bold; margin: 10px 0 10px 5px;">🌍 Hello World</h3>
+                                        <h3 class="language-title" style="font-size: 19px; font-weight: bold; margin: 10px 0 10px 5px;">🌍 Hello World</h3>
                                     </td>
                                 </tr>
 """
@@ -390,22 +390,22 @@ class ContentIntegrationAgent(BaseAgent):
                                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                             <tr>
                                                 <td>
-                                                    <p class="news-title" style="font-size: 17px; font-weight: bold; margin-bottom: 5px;">{news.get('title', '无标题')}</p>
+                                                    <p class="news-title" style="font-size: 19px; font-weight: bold; margin-bottom: 5px;">{news.get('title', '无标题')}</p>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <td>
-                                                    <span class="news-source" style="font-size: 12px;">来源: {news.get('source', '未知来源')}</span>
+                                                    <span class="news-source" style="font-size: 13px;">来源: {news.get('source', '未知来源')}</span>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <td style="padding-top: 5px;">
-                                                    <p class="news-description" style="font-size: 15px;">{news.get('description', '无描述')}</p>
+                                                    <p class="news-description" style="font-size: 17px;">{news.get('description', '无描述')}</p>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <td style="padding-top: 8px;">
-                                                    <a href="{news.get('url', '#')}" class="news-link" style="display: inline-block; color: #0066cc; font-size: 14px;" target="_blank">阅读更多 →</a>
+                                                    <a href="{news.get('url', '#')}" class="news-link" style="display: inline-block; color: #0066cc; font-size: 15px;" target="_blank">阅读更多 →</a>
                                                 </td>
                                             </tr>
                                         </table>

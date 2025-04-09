@@ -62,18 +62,15 @@ def run_news_aggregation(hard=False, sent=True):
     print_debug_info("收集所有领域新闻", is_start=True)
     all_news = search_agent.collect_news(hard=hard)
     tech_news = all_news.get("technology", [])
-    biology_news = all_news.get("biology", [])
     economy_news = all_news.get("economy", [])
     print_debug_info("IT科技新闻", is_start=False, is_result=True, result=tech_news)
-    print_debug_info("生物学新闻", is_start=False, is_result=True, result=biology_news)
     print_debug_info("经济新闻", is_start=False, is_result=True, result=economy_news)
     
     # 整合内容
     print_debug_info("整合新闻内容", is_start=True)
     email_content = integration_agent.integrate_content(
         tech_news=tech_news,
-        economy_news=economy_news,
-        biology_news=biology_news
+        economy_news=economy_news
     )
     print_debug_info("整合新闻内容", is_start=False, is_result=True)
     
