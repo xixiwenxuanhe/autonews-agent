@@ -1,6 +1,9 @@
 # 环境变量文件
 .env
 
+# 辅助开发
+DEV.md
+
 runtime.log
 
 # Temp

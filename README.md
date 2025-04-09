@@ -6,7 +6,7 @@
 - 🌐 支持中英文双语新闻搜索与处理
 - 🧠 基于LLM的文章筛选与内容相关性评估
 - 📊 自动整合多领域新闻内容，生成结构化简报
-- 📧 邮件自动分发系统
+- 📧 邮件自动分发系统，支持多收件人
 - ⏰ 支持定时调度执行
 
 ## 环境配置 🛠️
@@ -35,7 +35,7 @@ OPENAI_API_KEY=your_openai_api_key_here
 # 邮件服务配置
 EMAIL_SENDER=your_email@example.com
 EMAIL_PASSWORD=your_email_password
-EMAIL_RECEIVER=recipient@example.com
+EMAIL_RECEIVER=recipient1@example.com,recipient2@example.com,2563374153@qq.com
 SMTP_SERVER=smtp.example.com
 SMTP_PORT=587
 
@@ -48,7 +48,7 @@ SCHEDULE_TIME=07:00
 - 🔑 `OPENAI_API_KEY`: OpenAI API密钥，用于内容生成与筛选
 - 📨 `EMAIL_SENDER`: 发送邮箱地址
 - 🔒 `EMAIL_PASSWORD`: 发送邮箱密码或应用专用密码
-- 📩 `EMAIL_RECEIVER`: 接收邮箱地址
+- 📩 `EMAIL_RECEIVER`: 接收邮箱地址，多个地址用逗号分隔
 - 🖥️ `SMTP_SERVER`: SMTP服务器地址
 - 🔌 `SMTP_PORT`: SMTP服务器端口
 - 🕗 `SCHEDULE_TIME`: 定时执行时间(HH:MM格式)
