@@ -1,6 +1,54 @@
 /* 基本样式 */
 body {
     background-color: #f8f9fa;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-end;
+    padding-bottom: 2rem;
+}
+
+.container {
+    width: 100%;
+}
+
+.card {
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 系统设置卡片样式 */
+.settings-card {
+    height: 700px;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0;
+}
+
+.settings-card .card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+#emailContainer {
+    margin-top: 1rem;
+    min-height: 140px;
+}
+
+/* 系统信息卡片样式 */
+.info-card {
+    margin-bottom: 0;
+}
+
+#emailContainer .input-group {
+    margin-bottom: 10px !important;
+    height: 38px;
+}
+
+.card-header {
+    border-top-left-radius: 15px !important;
+    border-top-right-radius: 15px !important;
 }
 
 /* 邮箱输入框样式 */
@@ -38,9 +86,9 @@ body {
     color: #d8dee9;
     font-family: 'Courier New', monospace;
     padding: 15px;
-    border-radius: 5px;
-    height: 500px;
-    overflow-y: auto;
+    border-radius: 12px;
+    height: 626px;
+    overflow: hidden;
     white-space: pre-wrap;
     word-wrap: break-word;
 }
@@ -97,13 +145,14 @@ body {
 }
 
 /* 按钮样式 */
-#addEmailBtn {
+.btn {
+    border-radius: 10px;
     transition: all 0.2s ease;
 }
 
-#addEmailBtn:hover {
-    background-color: #5e81ac;
-    color: white;
+#addEmailBtn {
+    border-radius: 10px;
+    transition: all 0.2s ease;
 }
 
 /* 按钮图标与文本间距 */
