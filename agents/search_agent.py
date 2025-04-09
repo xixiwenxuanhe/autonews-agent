@@ -16,7 +16,7 @@ class SearchAgent(BaseAgent):
         
         Args:
             api_key: 新闻API的密钥
-            domains: 要搜索的领域列表，默认为["technology", "science", "economy"]
+            domains: 要搜索的领域列表，默认为["technology", "biology", "economy"]
             seed: 随机种子，用于复现结果
         """
         super().__init__()
@@ -24,7 +24,7 @@ class SearchAgent(BaseAgent):
         if not self.api_key:
             raise ValueError("API密钥未提供，请设置NEWS_API_KEY环境变量或在初始化时提供")
             
-        self.domains = domains or ["technology", "science", "economy"]
+        self.domains = domains or ["technology", "biology", "economy"]
         
         # 设置随机种子以便结果可复现
         if seed:
@@ -41,7 +41,7 @@ class SearchAgent(BaseAgent):
         # 存储预先生成的关键词对
         self.prepared_keywords = {}
         
-        # 硬编码的关键词对，确保科学领域获取物理、生物、化学相关文章
+        # 硬编码的关键词对
         self.hard_coded_keywords = {
             "technology": {
                 "en": [
@@ -57,18 +57,18 @@ class SearchAgent(BaseAgent):
                     ["云计算", "边缘计算"]
                 ]
             },
-            "science": {
+            "biology": {
                 "en": [
-                    ["biology", "genetics"],
-                    ["chemistry", "molecular structure"],
-                    ["biochemistry", "enzymes"],
-                    ["astronomy", "astrophysics"]
+                    ["genetics", "DNA research"],
+                    ["microbiology", "bacteria"],
+                    ["immunology", "vaccine development"],
+                    ["cell biology", "protein structure"]
                 ],
                 "zh": [
-                    ["生物学", "基因研究"],
-                    ["化学", "分子结构"],
-                    ["生物化学", "蛋白质研究"],
-                    ["天文学", "宇宙探索"]
+                    ["遗传学", "DNA研究"],
+                    ["微生物学", "细菌"],
+                    ["免疫学", "疫苗研发"],
+                    ["细胞生物学", "蛋白质结构"]
                 ]
             },
             "economy": {
@@ -95,12 +95,11 @@ class SearchAgent(BaseAgent):
                 其他技术创新如软件开发、硬件技术、云计算、数据科学、区块链、元宇宙、VR/AR、物联网、5G/6G等也属于技术类别。
                 请确保所选文章涵盖重大技术突破、行业动态和可能改变行业未来的重要事件。
             """,
-            "science": """
-                你是一位科学新闻筛选专家。请选择最重要和最具影响力的科学研究文章。
-                优先考虑生物学、化学、生物化学、天文学、地球科学和环境科学方面的重大科学发现和突破。
-                特别注意：请勿选择物理学、量子物理、人工智能、计算机技术及相关内容的文章。
-                经验表明，物理学相关文章容易包含AI和计算机技术内容，应予以排除。
-                请确保所选文章涵盖对人类知识有重大贡献的基础研究领域的重要发现，特别是生物学和化学领域。
+            "biology": """
+                你是一位生物学新闻筛选专家。请选择最重要和最具影响力的生物学研究文章。
+                优先考虑与遗传学、分子生物学、微生物学、免疫学、生物化学和细胞生物学等相关的重大科学发现和突破。
+                关注生物医学研究、药物开发、疫苗研究、基因编辑技术和生物技术创新等方面的内容。
+                请确保所选文章涵盖对人类健康和生物科学领域有重大贡献的研究发现和应用进展。
             """,
             "economy": """
                 你是一位经济新闻筛选专家。请选择最重要和最具影响力的经济新闻文章。
@@ -234,12 +233,12 @@ class SearchAgent(BaseAgent):
             特别注意：中文和英文关键词绝对不能有对应关系，必须选择完全不同的子领域。
             例如：如果英文选择了"artificial intelligence/machine learning"相关主题，中文就不能选择"人工智能/机器学习"，而应该选择"区块链/云计算"等完全不同的技术领域。
             """
-        elif domain == "science":
+        elif domain == "biology":
             domain_guidance = """
-            科学领域包含多个不同的学科，请确保选择的关键词对覆盖不同科学领域，使搜索结果多样化。
+            生物学领域包含多个不同的学科，请确保选择的关键词对覆盖不同科学领域，使搜索结果多样化。
             请确保每组关键词对属于不同的学科，尽量覆盖多个科学分支。
             特别注意：中文和英文关键词必须完全不相关，绝对不能选择相同的学科领域。
-            例如：如果英文选择了"physics/quantum"相关主题，中文就不能选择"物理/量子"，而应该选择"生物学/基因"等完全不同的科学领域。
+            例如：如果英文选择了"genetics/DNA"相关主题，中文就不能选择"遗传学/DNA"，而应该选择"微生物学/细菌"等完全不同的科学领域。
             """
         else:  # economy
             domain_guidance = """
@@ -404,7 +403,7 @@ class SearchAgent(BaseAgent):
             query = " AND ".join(keyword_pair)
             
             # 科学领域添加简单的负面关键词（排除词）
-            if domain == "science":
+            if domain == "biology":
                 # 通用排除词 - 简化为最常见的几个
                 exclude_words = ["AI", "artificial intelligence", "physics", "quantum", "物理", "人工智能"]
                 
@@ -583,8 +582,8 @@ if __name__ == "__main__":
     
     # 解析命令行参数
     parser = argparse.ArgumentParser(description="新闻搜索代理")
-    parser.add_argument("--domains", type=str, nargs="+", default=["technology", "science", "economy"], 
-                        help="要搜索的领域，可选：technology, science, economy")
+    parser.add_argument("--domains", type=str, nargs="+", default=["technology", "biology", "economy"], 
+                        help="要搜索的领域，可选：technology, biology, economy")
     parser.add_argument("--num_pairs", type=int, default=4, help="每个领域每种语言的关键词对数量")
     parser.add_argument("--max_articles", type=int, default=5, help="每个领域每种语言保留的文章数量")
     parser.add_argument("--show_content", action="store_true", help="是否显示文章摘要")

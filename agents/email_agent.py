@@ -39,7 +39,7 @@ class EmailAgent(BaseAgent):
         print(f"[{datetime.now().strftime('%H:%M:%S')}] 📧 发送邮件...")
         
         today = datetime.now().strftime("%Y年%m月%d日")
-        subject = f"每日新闻摘要 - {today}"
+        subject = f"每日新闻摘要 (科技/经济/生物学) - {today}"
         
         # 创建邮件对象
         msg = MIMEMultipart('alternative')
