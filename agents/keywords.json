@@ -38,46 +38,6 @@
             ["6G", "物联网"]
         ]
     },
-    "biology": {
-        "en": [
-            ["genetics", "genomics"],
-            ["DNA", "RNA"],
-            ["protein", "amino acid"],
-            ["cell biology", "molecular biology"],
-            ["microbiology", "bacteria"],
-            ["virology", "virus"],
-            ["immunology", "antibody"],
-            ["vaccine", "immune system"],
-            ["biochemistry", "enzyme"],
-            ["metabolism", "metabolic pathway"],
-            ["gene editing", "CRISPR"],
-            ["stem cell", "regenerative medicine"],
-            ["cancer research", "oncology"],
-            ["neuroscience", "brain research"],
-            ["drug discovery", "pharmaceutical"],
-            ["biotechnology", "genetic engineering"],
-            ["cloning", "recombinant DNA"]
-        ],
-        "zh": [
-            ["遗传学", "基因组学"],
-            ["DNA", "RNA"],
-            ["蛋白质", "氨基酸"],
-            ["细胞生物学", "分子生物学"],
-            ["微生物学", "细菌"],
-            ["病毒学", "病毒"],
-            ["免疫学", "抗体"],
-            ["疫苗", "免疫系统"],
-            ["生物化学", "酶"],
-            ["代谢", "代谢通路"],
-            ["基因编辑", "CRISPR"],
-            ["干细胞", "再生医学"],
-            ["癌症研究", "肿瘤学"],
-            ["神经科学", "脑研究"],
-            ["药物研发", "制药"],
-            ["生物技术", "基因工程"],
-            ["克隆", "重组DNA"]
-        ]
-    },
     "economy": {
         "en": [
             ["stock market", "stock exchange"],

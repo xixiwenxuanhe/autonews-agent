@@ -35,7 +35,7 @@ class ContentIntegrationAgent(BaseAgent):
         Args:
             tech_news: IT科技新闻列表
             economy_news: 经济新闻列表
-            biology_news: 生物学新闻列表
+            biology_news: 仅为向后兼容保留，不再使用
             
         Returns:
             str: 整合后的邮件内容
@@ -49,12 +49,9 @@ class ContentIntegrationAgent(BaseAgent):
         zh_economy_news = [news for news in economy_news or [] if news.get('language') == '中文']
         en_economy_news = [news for news in economy_news or [] if news.get('language') == '英文']
         
-        zh_biology_news = [news for news in biology_news or [] if news.get('language') == '中文']
-        en_biology_news = [news for news in biology_news or [] if news.get('language') == '英文']
-        
         # 统计各类新闻数量
-        total_zh_news = len(zh_tech_news) + len(zh_economy_news) + len(zh_biology_news)
-        total_en_news = len(en_tech_news) + len(en_economy_news) + len(en_biology_news)
+        total_zh_news = len(zh_tech_news) + len(zh_economy_news)
+        total_en_news = len(en_tech_news) + len(en_economy_news)
         
         today = datetime.now().strftime("%Y年%m月%d日")
         
@@ -421,97 +418,6 @@ class ContentIntegrationAgent(BaseAgent):
                                 <tr>
                                     <td class="section-divider" style="border-top: 1px solid #eeeeee; font-size: 1px; height: 1px;">&nbsp;</td>
                                 </tr>
-                            </table>
-"""
-
-        # 添加生物学新闻部分
-        if biology_news:
-            html_content += f"""
-                            <table border="0" cellpadding="0" cellspacing="0" width="100%" class="section" style="margin-bottom: 25px;">
-                                <tr>
-                                    <td>
-                                        <h2 class="section-title" style="font-size: 20px; font-weight: bold; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 1px solid #eeeeee;">🧬 生物学新闻</h2>
-                                    </td>
-                                </tr>
-"""
-            # 添加中文新闻
-            if zh_biology_news:
-                html_content += f"""
-                                <tr>
-                                    <td style="padding-bottom: 5px;">
-                                        <h3 class="language-title" style="font-size: 17px; font-weight: bold; margin: 10px 0 10px 5px;">🇨🇳 早安中国</h3>
-                                    </td>
-                                </tr>
-"""
-                for news in zh_biology_news:
-                    html_content += f"""
-                                <tr>
-                                    <td class="news-item" style="padding: 0 0 20px 10px;">
-                                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                            <tr>
-                                                <td>
-                                                    <p class="news-title" style="font-size: 17px; font-weight: bold; margin-bottom: 5px;">{news.get('title', '无标题')}</p>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <span class="news-source" style="font-size: 12px;">来源: {news.get('source', '未知来源')}</span>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td style="padding-top: 5px;">
-                                                    <p class="news-description" style="font-size: 15px;">{news.get('description', '无描述')}</p>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td style="padding-top: 8px;">
-                                                    <a href="{news.get('url', '#')}" class="news-link" style="display: inline-block; color: #0066cc; font-size: 14px;" target="_blank">阅读更多 →</a>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                    </td>
-                                </tr>
-"""
-            
-            # 添加英文新闻
-            if en_biology_news:
-                html_content += f"""
-                                <tr>
-                                    <td style="padding-bottom: 5px;">
-                                        <h3 class="language-title" style="font-size: 17px; font-weight: bold; margin: 10px 0 10px 5px;">🌍 Hello World</h3>
-                                    </td>
-                                </tr>
-"""
-                for news in en_biology_news:
-                    html_content += f"""
-                                <tr>
-                                    <td class="news-item" style="padding: 0 0 20px 10px;">
-                                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                            <tr>
-                                                <td>
-                                                    <p class="news-title" style="font-size: 17px; font-weight: bold; margin-bottom: 5px;">{news.get('title', '无标题')}</p>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <span class="news-source" style="font-size: 12px;">来源: {news.get('source', '未知来源')}</span>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td style="padding-top: 5px;">
-                                                    <p class="news-description" style="font-size: 15px;">{news.get('description', '无描述')}</p>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td style="padding-top: 8px;">
-                                                    <a href="{news.get('url', '#')}" class="news-link" style="display: inline-block; color: #0066cc; font-size: 14px;" target="_blank">阅读更多 →</a>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                    </td>
-                                </tr>
-"""
-            html_content += """
                             </table>
 """
 
