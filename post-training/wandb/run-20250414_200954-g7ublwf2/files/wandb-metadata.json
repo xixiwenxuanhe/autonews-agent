@@ -1,0 +1,80 @@
+{
+  "os": "Linux-5.15.0-107-generic-x86_64-with-glibc2.31",
+  "python": "CPython 3.12.2",
+  "startedAt": "2025-04-14T12:09:54.706895Z",
+  "program": "/media/h3c/users/wenxuan/code_ws/autonews-agent/post-training/finetune_deepseek_gpus.py",
+  "codePath": "autonews-agent/post-training/finetune_deepseek_gpus.py",
+  "email": "wenxuanhe@stu.cqu.edu.cn",
+  "root": "autonews-agent/post-training",
+  "host": "h3c-R5500-G5",
+  "executable": "/media/h3c/users/wenxuan/env/torch2/bin/python",
+  "codePathLocal": "autonews-agent/post-training/finetune_deepseek_gpus.py",
+  "cpu_count": 128,
+  "cpu_count_logical": 256,
+  "gpu": "NVIDIA A800-SXM4-80GB",
+  "gpu_count": 8,
+  "disk": {
+    "/": {
+      "total": "470855794688",
+      "used": "157452623872"
+    }
+  },
+  "memory": {
+    "total": "540650614784"
+  },
+  "cpu": {
+    "count": 128,
+    "countLogical": 256
+  },
+  "gpu_nvidia": [
+    {
+      "name": "NVIDIA A800-SXM4-80GB",
+      "memoryTotal": "85899345920",
+      "cudaCores": 6912,
+      "architecture": "Ampere"
+    },
+    {
+      "name": "NVIDIA A800-SXM4-80GB",
+      "memoryTotal": "85899345920",
+      "cudaCores": 6912,
+      "architecture": "Ampere"
+    },
+    {
+      "name": "NVIDIA A800-SXM4-80GB",
+      "memoryTotal": "85899345920",
+      "cudaCores": 6912,
+      "architecture": "Ampere"
+    },
+    {
+      "name": "NVIDIA A800-SXM4-80GB",
+      "memoryTotal": "85899345920",
+      "cudaCores": 6912,
+      "architecture": "Ampere"
+    },
+    {
+      "name": "NVIDIA A800-SXM4-80GB",
+      "memoryTotal": "85899345920",
+      "cudaCores": 6912,
+      "architecture": "Ampere"
+    },
+    {
+      "name": "NVIDIA A800-SXM4-80GB",
+      "memoryTotal": "85899345920",
+      "cudaCores": 6912,
+      "architecture": "Ampere"
+    },
+    {
+      "name": "NVIDIA A800-SXM4-80GB",
+      "memoryTotal": "85899345920",
+      "cudaCores": 6912,
+      "architecture": "Ampere"
+    },
+    {
+      "name": "NVIDIA A800-SXM4-80GB",
+      "memoryTotal": "85899345920",
+      "cudaCores": 6912,
+      "architecture": "Ampere"
+    }
+  ],
+  "cudaVersion": "12.4"
+}
