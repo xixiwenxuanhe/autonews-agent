@@ -1,0 +1,8 @@
+requests==2.31.0
+beautifulsoup4==4.12.2
+langchain==0.0.330
+langchain_openai==0.0.5
+python-dotenv==1.0.0
+schedule==1.2.1
+flask==2.3.3
+flask-socketio==5.3.6 
