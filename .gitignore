@@ -4,7 +4,7 @@
 # 辅助开发
 DEV.md
 
-runtime.log
+*.log
 
 # Temp
 NOTION.md
