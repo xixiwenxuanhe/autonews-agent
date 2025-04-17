@@ -1,5 +1,11 @@
 # NewsMailAgent 📰✉️
 
+## 系统网页效果展示
+
+![系统网页效果截图](post-training/logs/imgs/image09.png)
+
+> 系统网页效果截图，网页已部署：[https://tempshow.wenxuanhe.top/autonews-agent/](https://tempshow.wenxuanhe.top/autonews-agent/)
+
 ## 功能概述 🌟
 
 - 🔍 自动收集技术、经济和生物学领域的最新新闻
@@ -309,6 +315,41 @@ r \ll d
 $$
 
 仅需训练低秩矩阵 A、B，即可实现对大模型的高效适配。LoRA 方法不仅适用于资源受限环境下的大模型微调，也天然契合分布式并行训练场景，助力大规模应用落地。
+
+### DevFlow
+
+#### 1. 运行news_title_classifier.py后的截图
+![news_title_classifier](post-training/logs/imgs/image01.png)
+
+#### 2. 运行LORA微调的finetune_deepseek代码截图（含参数信息）
+![finetune_deepseek参数](post-training/logs/imgs/image02.png)
+
+#### 3. 运行finetune_deepseek_gpus.py进行双GPU A800训练开始的截图
+![双GPU训练开始](post-training/logs/imgs/image05.png)
+
+#### 4. 双GPU训练4个小时后的代码结果截图
+![双GPU训练4小时结果](post-training/logs/imgs/image06.png)
+
+#### 5. nvidia-smi的结果图（服务器配有8张A800 80G，仅用2张分布式微调）
+![nvidia-smi](post-training/logs/imgs/image10.png)
+
+#### 6. 服务器机房图片
+![服务器机房](post-training/logs/imgs/image11.png)
+
+#### 7. weightbias提供的本次训练的配置信息
+![weightbias配置](post-training/logs/imgs/image12.png)
+
+#### 8. 训练过程中的loss、动态学习率可视化（loss从10.7降到0.11）
+![训练loss与学习率](post-training/logs/imgs/image13.png)
+
+#### 9. eval过程中的loss从0.24下降到0.1，结果达预期，符合理论预测
+![eval loss](post-training/logs/imgs/image14.png)
+
+#### 10. 评估微调后模型与原模型的inference_evaluation.py代码截图（2 worker双线程，API推理）
+![inference_evaluation对比](post-training/logs/imgs/image08.png)
+
+#### 11. 运行inference_evaluation.py的截图（加载LORA，合并权重，直接推理）
+![LORA合并权重推理](post-training/logs/imgs/image07.png)
 
 ## 许可证 📄
 
