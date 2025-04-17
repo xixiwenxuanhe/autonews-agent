@@ -342,7 +342,7 @@ $$
 #### 4. 双GPU训练4个小时后的代码结果截图
 ![双GPU训练4小时结果](post-training/logs/imgs/image06.png)
 
-#### 5. weightbias提供的本次训练的配置信息
+#### 5. Weight&Bias提供的本次训练的配置信息
 ![weightbias配置](post-training/logs/imgs/image12.png)
 
 #### 6. 训练过程中的loss、动态学习率可视化（loss从10.7降到0.11）
