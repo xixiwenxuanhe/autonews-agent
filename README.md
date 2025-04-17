@@ -230,6 +230,18 @@ API密钥错误：
 
 本部分基于**DeepSeek-R1-Distill-Qwen-14B**大模型，结合LORA参数高效微调方法，构建了一个高精度的新闻标题分类器。整体流程如下：
 
+### 实验平台
+
+本项目实验平台硬件环境如下：
+
+- 服务器配备8张NVIDIA A800 80G显卡，CPU及内存信息如下：
+
+![CPU与GPU信息](post-training/logs/imgs/image15.png)
+
+- 本次实验仅用2张A800进行分布式微调：
+
+![nvidia-smi](post-training/logs/imgs/image10.png)
+
 1. **数据采集与预处理**
    - 使用`utils/news_fetch.py`自动抓取多领域新闻标题，存储于`dataset/`目录下。
    - 通过`utils/news_title_classifier.py`，调用自建GPT-4o-mini网关，对采集到的标题进行领域标签标注，形成高质量有标签数据集。
@@ -330,25 +342,19 @@ $$
 #### 4. 双GPU训练4个小时后的代码结果截图
 ![双GPU训练4小时结果](post-training/logs/imgs/image06.png)
 
-#### 5. nvidia-smi的结果图（服务器配有8张A800 80G，仅用2张分布式微调）
-![nvidia-smi](post-training/logs/imgs/image10.png)
-
-#### 6. 服务器机房图片
-![服务器机房](post-training/logs/imgs/image11.png)
-
-#### 7. weightbias提供的本次训练的配置信息
+#### 5. weightbias提供的本次训练的配置信息
 ![weightbias配置](post-training/logs/imgs/image12.png)
 
-#### 8. 训练过程中的loss、动态学习率可视化（loss从10.7降到0.11）
+#### 6. 训练过程中的loss、动态学习率可视化（loss从10.7降到0.11）
 ![训练loss与学习率](post-training/logs/imgs/image13.png)
 
-#### 9. eval过程中的loss从0.24下降到0.1，结果达预期，符合理论预测
+#### 7. eval过程中的loss从0.24下降到0.1，结果达预期，符合理论预测
 ![eval loss](post-training/logs/imgs/image14.png)
 
-#### 10. 评估微调后模型与原模型的inference_evaluation.py代码截图（2 worker双线程，API推理）
+#### 8. 评估微调后模型与原模型的inference_evaluation.py代码截图（2 worker双线程，API推理）
 ![inference_evaluation对比](post-training/logs/imgs/image08.png)
 
-#### 11. 运行inference_evaluation.py的截图（加载LORA，合并权重，直接推理）
+#### 9. 运行inference_evaluation.py的截图（加载LORA，合并权重，直接推理）
 ![LORA合并权重推理](post-training/logs/imgs/image07.png)
 
 ## 许可证 📄
