@@ -72,7 +72,7 @@ def main():
     parser.add_argument("--per_device_train_batch_size", type=int, default=2, help="每个 GPU 上训练的 batch size")  # 进一步减小batch size
     parser.add_argument("--per_device_eval_batch_size", type=int, default=2, help="每个 GPU 上评估的 batch size")  # 进一步减小batch size
     parser.add_argument("--gradient_accumulation_steps", type=int, default=16, help="梯度累积步数")  # 进一步增加梯度累积
-    parser.add_argument("--num_train_epochs", type=int, default=1, help="训练轮数")
+    parser.add_argument("--num_train_epochs", type=int, default=80, help="训练轮数")
     parser.add_argument("--learning_rate", type=float, default=5e-5, help="学习率")
     parser.add_argument("--max_length", type=int, default=512, help="最大 token 长度")
     parser.add_argument("--logging_steps", type=int, default=10, help="日志记录间隔步数")
