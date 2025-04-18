@@ -383,7 +383,7 @@ $$
 
 ---
 
-### Agent SDK（以OpenAI Agent SDK为例）🧩✨
+### Agent SDK 🧩✨
 
 要让智能体们"组团打怪"，还得有一套好用的"开发神器"——这就是**Agent SDK**！
 
@@ -399,13 +399,13 @@ $$
 - **应用价值 💡**  
   有了Agent SDK，多智能体系统开发效率up up up，维护扩展so easy，智能体应用"批量生产"不是梦！
 
-#### Agent SDK 核心流程
+#### Agent SDK 核心流程(本图基于ChatGPT原生图像功能生成)
 ![Agent SDK核心流程图](post-training/logs/imgs/AgentSDK1.png)
 
 #### Agent SDK demo示范（以OpenAI Agent SDK为例）
 ![Agent SDK示例代码](post-training/logs/imgs/AgentSDK2.png)
 
-#### 特别鸣谢：感谢OpenAI大善人送上的免费GPT-4.1-mini模型额度
+#### 特别鸣谢：感谢OpenAI大善人送上的免费`GPT-4.1-mini`模型额度
 ---
 
 
