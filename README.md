@@ -357,6 +357,54 @@ $$
 #### 9. 运行inference_evaluation.py的截图（加载LORA，合并权重，直接推理）
 ![LORA合并权重推理](post-training/logs/imgs/image07.png)
 
+## 进一步展望：多智能体协作 🤖🤝🤖
+
+### MCP + A2A 协作范式 🛠️🔗
+
+在智能体的世界里，单打独斗早就过时啦！现在流行的是——
+
+- **MCP（Multi-Component Planning，多组件规划）🛠️**  
+  这就像给所有智能体发了一本"工具说明书"📚，大家都按统一标准用工具。无论是查资料、算数学、发邮件，智能体都能像人类一样灵活调用各种外部工具，谁用得好谁就是"工具王"👑！MCP的精髓就是：**让Agent会用工具，工具越多越强大！**
+
+- **A2A（Agent-to-Agent，智能体间协作）🤝**  
+  你有你的绝活，我有我的专长。A2A让智能体们可以互相聊天、分工合作、信息共享，像团队一样完成大任务。遇到难题，大家一起头脑风暴，效率翻倍！
+
+- **MCP+A2A 融合范式 🚀**  
+  工具用得溜，伙伴配合好，智能体团队就能无往不利！MCP+A2A结合了统一工具标准和智能体间的高效协作，适合打造超大规模、超强能力的智能体"联盟"⚡。
+
+下面三张图，带你一秒看懂它们的协作关系：
+
+![MCP协作关系](post-training/logs/imgs/MCP.png)
+![A2A协作关系](post-training/logs/imgs/A2A.png)
+![MCP+A2A融合协作](post-training/logs/imgs/MCP+A2A.png)
+
+---
+
+### Agent SDK（以OpenAI Agent SDK为例）🧩✨
+
+要让智能体们"组团打怪"，还得有一套好用的"开发神器"——这就是**Agent SDK**！
+
+- **核心思想 🧠**  
+  Agent SDK就像是智能体的"万能遥控器🎮"，帮你把每个Agent都标准化、模块化。开发者只管写业务逻辑，通信、调度、工具调用这些"杂事"全都交给SDK自动打理，省心省力！
+
+- **主要功能 🛎️**  
+  - 智能体注册与发现：Agent来了就能被"看到"，能力一目了然👀。
+  - 工具集成：一行代码接入外部API、数据库、检索引擎，Agent用工具so easy🔌。
+  - 消息路由与任务编排：Agent之间消息飞快传递，任务分发井井有条📬。
+  - 生命周期与异常管理：Agent出问题？SDK帮你兜底，稳如老狗🦺。
+
+- **应用价值 💡**  
+  有了Agent SDK，多智能体系统开发效率up up up，维护扩展so easy，智能体应用"批量生产"不是梦！
+
+来两张图，直观感受OpenAI Agent SDK的核心流程和代码示例：
+
+![Agent SDK核心流程图](post-training/logs/imgs/AgentSDK1.png)
+![Agent SDK示例代码](post-training/logs/imgs/AgentSDK2.png)
+
+---
+
+如果你想深入了解OpenAI Agent SDK怎么玩，或者想知道怎么和本项目结合，随时来问我吧！😎
+
 ## 许可证 📄
 
 [MIT License](LICENSE)
