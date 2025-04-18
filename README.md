@@ -372,8 +372,6 @@ $$
 - **MCP+A2A 融合范式 🚀**  
   工具用得溜，伙伴配合好，智能体团队就能无往不利！MCP+A2A结合了统一工具标准和智能体间的高效协作，适合打造超大规模、超强能力的智能体"联盟"⚡。
 
-下面三张图，带你一秒看懂它们的协作关系：
-
 ![MCP协作关系](post-training/logs/imgs/MCP.png)
 ![A2A协作关系](post-training/logs/imgs/A2A.png)
 ![MCP+A2A融合协作](post-training/logs/imgs/MCP+A2A.png)
@@ -396,14 +394,12 @@ $$
 - **应用价值 💡**  
   有了Agent SDK，多智能体系统开发效率up up up，维护扩展so easy，智能体应用"批量生产"不是梦！
 
-来两张图，直观感受OpenAI Agent SDK的核心流程和代码示例：
 
 ![Agent SDK核心流程图](post-training/logs/imgs/AgentSDK1.png)
 ![Agent SDK示例代码](post-training/logs/imgs/AgentSDK2.png)
 
 ---
 
-如果你想深入了解OpenAI Agent SDK怎么玩，或者想知道怎么和本项目结合，随时来问我吧！😎
 
 ## 许可证 📄
 
